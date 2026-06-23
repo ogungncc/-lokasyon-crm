@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lokasyon CRM">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lokasyon CRM – Locations</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e0ddd6;padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:15px;font-weight:600;color:#1a1a1a;letter-spacing:-0.3px}
+.topbar-logo span{color:#888}
+.container{max-width:1100px;margin:0 auto;padding:1.5rem 2rem}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e0ddd6;margin-bottom:1.5rem;flex-wrap:wrap;background:#fff;padding:0 2rem;margin-left:-2rem;margin-right:-2rem;padding-top:4px}
+.tab{padding:10px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:#666;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:inherit}
+.tab.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:500}
+.tab:hover:not(.active){color:#1a1a1a;background:#f9f9f7}
+.tab i{margin-right:5px;font-size:15px;vertical-align:-2px}
+.section{display:none}.section.active{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;color:#666;font-weight:500;text-transform:uppercase;letter-spacing:0.3px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;font-family:inherit;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
+textarea{resize:vertical;min-height:65px}
+.card{background:#fff;border:1px solid #e0ddd6;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:600;margin-bottom:1rem;color:#1a1a1a}
+.btn{padding:9px 16px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;font-family:inherit;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:#f5f5f0;border-color:#bbb}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-primary:hover{background:#333;border-color:#333}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{color:#b91c1c}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.b-bekliyor{background:#dbeafe;color:#1e40af}
+.b-sunuldu{background:#fef3c7;color:#92400e}
+.b-olumlu{background:#dcfce7;color:#166534}
+.b-olumsuz{background:#fee2e2;color:#991b1b}
+.b-kiralandi{background:#d1fae5;color:#065f46}
+.b-aktif{background:#dcfce7;color:#166534}
+.b-pasif{background:#f3f4f6;color:#6b7280}
+.b-bizim-kiraladi{background:#c7d2fe;color:#3730a3}
+.b-baskasi-kiraladi{background:#fee2e2;color:#991b1b}
+.b-acik{background:#dbeafe;color:#1e40af}
+.b-eslesti{background:#dcfce7;color:#166534}
+.b-kapandi{background:#f3f4f6;color:#6b7280}
+.stat-card{background:#f9f9f7;border:1px solid #e0ddd6;border-radius:10px;padding:1rem;text-align:center}
+.stat-num{font-size:26px;font-weight:600;margin-top:4px}
+.stat-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.3px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;color:#888;font-weight:500;border-bottom:1px solid #e0ddd6;text-transform:uppercase;letter-spacing:0.3px;background:#fafaf8}
+td{padding:9px 12px;border-bottom:1px solid #f0ede8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+.filter-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.filter-bar select,.filter-bar input{width:auto;font-size:13px;padding:7px 10px}
+.filter-bar input{width:200px}
+.empty{text-align:center;padding:2.5rem;color:#aaa;font-size:14px}
+.detail-overlay{display:none;position:absolute;top:0;left:0;right:0;background:#fff;border-radius:12px;z-index:10;min-height:300px;padding:1.5rem;border:1px solid #e0ddd6;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
+.wrapper{position:relative;min-height:300px}
+.tag{background:#f0ede8;border-radius:20px;font-size:11px;padding:2px 9px;color:#666;display:inline-block;margin:2px}
+.uyari-box{background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#78350f}
+.oneri-chip{display:inline-block;margin:3px;padding:5px 12px;border:1px solid #f59e0b;border-radius:20px;font-size:12px;cursor:pointer;color:#92400e;background:#fffbeb;transition:background 0.1s}
+.oneri-chip:hover{background:#fde68a}
+.sek-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;background:#eff6ff;color:#1d4ed8}
+.hava-tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;background:#fff7ed;color:#9a3412;font-weight:500;border:1px solid #fed7aa}
+.eslesme-card{border:1px solid #e0ddd6;border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.eslesme-card.guclu{border-color:#10b981;background:#f0fdf4}
+.eslesme-card.orta{border-color:#f59e0b;background:#fffbeb}
+.eslesme-card.zayif{background:#fafaf8}
+.eslesme-puan{font-size:20px;font-weight:700;min-width:40px;text-align:center}
+.eslesme-puan.guclu{color:#065f46}
+.eslesme-puan.orta{color:#92400e}
+.eslesme-puan.zayif{color:#aaa}
+.sunum-satir{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.talep-kart:hover{background:#f9f9f7}
+.kaynak-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px}
+.kb-toplantı,.kb-toplanti{background:#ede9fe;color:#5b21b6}
+.kb-mail{background:#dbeafe;color:#1e40af}
+.kb-telefon{background:#dcfce7;color:#166534}
+.kb-diğer,.kb-diger{background:#f3f4f6;color:#6b7280}
+.talep-eslesme-kutu{background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#065f46}
+.success-msg{font-size:13px;color:#166534;margin-top:8px;display:none;padding:6px 12px;background:#dcfce7;border-radius:6px;display:none}
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.container{padding:1rem}}
+
+@media(max-width:768px){
+  .container{padding:0.75rem 1rem}
+  .tabs{padding:0 1rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
+  .topbar{padding:0 1rem}
+  .topbar>div:last-child{display:none}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr!important}
+  table{font-size:12px}
+  th,td{padding:6px 8px}
+  input,select{font-size:16px!important}
+  .btn{padding:10px 14px}
+  .card{padding:1rem}
+  .detail-overlay{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:50;overflow-y:auto;border-radius:0!important}
+  #marka-detay-panel{grid-column:1}
+  .grid2[style*="grid-template-columns:1fr 380px"]{grid-template-columns:1fr!important}
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">Lokasyon <span>CRM</span></div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center"><span id="sync-status" style="font-size:12px;color:#888;margin-right:4px">☁️ Yükleniyor...</span>
+  <button onclick="veriDisaAktar()" style="padding:6px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#f0fdf4;font-family:inherit">💾 Yedekle</button>
+  <button onclick="document.getElementById('veri-yukle-input').click()" style="padding:6px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#eff6ff;font-family:inherit">📂 Yükle</button>
+  <input type="file" id="veri-yukle-input" accept=".json" style="display:none" onchange="veriIceAktar(this)">
+  <button onclick="temizleDuplicate()" style="padding:6px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff7ed;font-family:inherit">🧹 Tekrarları Temizle</button>
+  <button onclick="importExcel()" style="padding:6px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#f5f5f0;font-family:inherit">📥 Excel'den Yükle</button>
+</div>
+</div>
+
+<div class="container">
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('pano')"><i class="ti ti-layout-dashboard"></i> Pano</button>
+  <button class="tab" onclick="showTab('magazalar')"><i class="ti ti-building-store"></i> Mağazalar</button>
+  <button class="tab" onclick="showTab('yeni')"><i class="ti ti-plus"></i> Yeni Mağaza</button>
+  <button class="tab" onclick="showTab('markalar')"><i class="ti ti-tag"></i> Markalar</button>
+  <button class="tab" onclick="showTab('talepler')"><i class="ti ti-map-pin"></i> Lokasyon Talepleri</button>
+  <button class="tab" onclick="showTab('sunumlar')"><i class="ti ti-presentation"></i> Sunumlar</button>
+  <button class="tab" onclick="showTab('ekip')"><i class="ti ti-users"></i> Ekip & Performans</button>
+</div>
+
+<!-- PANO -->
+<div id="sec-pano" class="section active">
+  <div class="grid4" id="stats-grid" style="grid-template-columns:repeat(5,1fr)" style="margin-bottom:1.5rem"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Son aktivite</div>
+      <div id="son-aktivite"><div class="empty">Henüz veri yok</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-map-pin" style="color:#2563eb;vertical-align:-2px"></i> Açık lokasyon talepleri</div>
+      <div id="pano-talepler"><div class="empty">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAĞAZALAR -->
+<div id="sec-magazalar" class="section">
+  <div class="wrapper">
+    <div class="filter-bar">
+      <input type="text" id="ara" placeholder="🔍  Mağaza, şehir veya cadde..." oninput="renderMagaza()">
+      <select id="fil-sehir" onchange="renderMagaza()"><option value="">Tüm şehirler</option></select>
+      <select id="fil-durum" onchange="renderMagaza()">
+        <option value="">Tüm durumlar</option>
+        <option>Aktif</option><option>Pasif</option><option>Bizim Kiraladık</option><option>Başkası Kiraladı</option>
+      </select>
+      <select id="fil-hava" onchange="renderMagaza()">
+        <option value="">Hava fark etmez</option>
+        <option value="evet">Hava parası var</option>
+        <option value="hayir">Hava parası yok</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr>
+          <th>Mağaza</th><th>Şehir / Cadde</th><th>m²</th><th>Kira ₺</th><th>Hava ₺</th><th>Durum</th><th>Markalar</th><th></th>
+        </tr></thead>
+        <tbody id="magaza-tbody"></tbody>
+      </table>
+    </div>
+    <div id="detail-panel" class="detail-overlay"></div>
+  </div>
+</div>
+
+<!-- YENİ MAĞAZA -->
+<div id="sec-yeni" class="section">
+  <div class="card">
+    <div class="card-title" id="form-baslik">Yeni mağaza ekle</div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="field"><label>Mağaza adı *</label><input id="f-ad" placeholder="örn. GMK Bulvarı No:45" oninput="renderOneri()"></div>
+      <div class="field"><label>Şehir *</label><input id="f-sehir" placeholder="Mersin" oninput="renderOneri();renderTalepEslesmesi()"></div>
+    </div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="field"><label>Cadde / AVM</label><input id="f-cadde" placeholder="GMK Bulvarı" oninput="renderTalepEslesmesi()"></div>
+      <div class="field"><label>İletişim kişisi</label><input id="f-iletisim" placeholder="Ad Soyad – 0532..."></div>
+    </div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="field"><label>Metrekare (m²)</label><input id="f-m2" type="number" placeholder="120" oninput="renderOneri()"></div>
+      <div class="field"><label>Kira bedeli (₺)</label><input id="f-kira" type="number" placeholder="25000"></div>
+      <div class="field"><label>Hava parası (₺)</label><input id="f-hava" type="number" placeholder="boş bırak = yok"></div>
+    </div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="field"><label>Durum</label>
+        <select id="f-durum"><option>Aktif</option><option>Pasif</option><option>Bizim Kiraladık</option><option>Başkası Kiraladı</option></select>
+      </div>
+      <div class="field"><label>Sektör tercihi</label>
+        <select id="f-sektor">
+          <option value="">Fark etmez</option>
+          <option>Moda / Giyim</option><option>Ayakkabı / Aksesuar</option><option>Gıda / Restoran</option><option>Kafe / Kahve</option>
+          <option>Kozmetik / Güzellik</option><option>Elektronik</option><option>Spor</option><option>Ev / Dekorasyon</option><option>Diğer</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:1.25rem"><label>Notlar</label><textarea id="f-not" placeholder="Ekstra bilgi..."></textarea></div>
+
+    <div id="talep-eslesme-bolum" style="display:none;margin-bottom:1.25rem">
+      <div class="talep-eslesme-kutu">
+        <div style="font-weight:600;margin-bottom:6px">📍 Bu lokasyon için açık marka talepleri var!</div>
+        <div id="talep-eslesme-liste"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.25rem">
+      <button id="ai-arastir-btn" class="btn" style="font-size:13px;border-color:#c7d2fe;color:#3730a3;background:#eef2ff" onclick="aiMarkaArastir()">
+        🔍 Bu lokasyona uygun markaları AI ile araştır
+      </button>
+      <div id="oneri-bolum" style="display:none;margin-top:10px">
+        <div class="uyari-box">
+          <div style="font-weight:600;margin-bottom:6px" id="oneri-baslik">💡 Uygun markalar</div>
+          <div id="oneri-chipler"></div>
+          <div style="font-size:11px;margin-top:8px;color:#92400e">Tıklayarak aşağıya ekle</div>
+        </div>
+      </div>
+      <div id="ai-yukleniyor" style="display:none;font-size:13px;color:#888;margin-top:8px;padding:10px;background:#f9f9f7;border-radius:8px">
+        🤖 AI o caddedeki markaları araştırıyor...
+      </div>
+      <div id="ai-sonuc" style="display:none;margin-top:10px;font-size:13px;background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:10px 14px;color:#065f46"></div>
+    </div>
+
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#1a1a1a">Sunum yapılan markalar</div>
+    <div id="sunum-ekle-list"></div>
+    <button class="btn btn-sm" style="margin-bottom:1.25rem" onclick="ekleMarkaSatiri()"><i class="ti ti-plus"></i> Marka ekle</button>
+
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" onclick="kaydet()">💾 Kaydet</button>
+      <button class="btn" onclick="formTemizle()">Temizle</button>
+    </div>
+    <div id="kayit-msg" class="success-msg">✓ Başarıyla kaydedildi!</div>
+  </div>
+</div>
+
+<!-- MARKALAR -->
+<div id="sec-markalar" class="section">
+  <div class="card">
+    <div class="card-title">Yeni marka ekle</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div class="field" style="flex:2;min-width:130px"><label>Marka adı *</label><input id="m-ad" placeholder="Örn. Zara"></div>
+      <div class="field" style="flex:2;min-width:140px"><label>Sektör</label>
+        <select id="m-sektor"><option value="">Seçin</option><option>Moda / Giyim</option><option>Ayakkabı / Aksesuar</option><option>Gıda / Restoran</option><option>Kafe / Kahve</option><option>Kozmetik / Güzellik</option><option>Elektronik</option><option>Spor</option><option>Ev / Dekorasyon</option><option>Diğer</option></select>
+      </div>
+      <div class="field" style="flex:2;min-width:140px"><label>Bölge tercihi</label><input id="m-bolge" placeholder="İstanbul, Ankara..."></div>
+      <div class="field" style="flex:1;min-width:80px"><label>Min m²</label><input id="m-minm2" type="number" placeholder="50"></div>
+      <div class="field" style="flex:1;min-width:80px"><label>Max m²</label><input id="m-maxm2" type="number" placeholder="300"></div>
+      <button class="btn btn-primary" onclick="markaSave()" style="align-self:flex-end">Ekle</button>
+    </div>
+    <div id="marka-msg" class="success-msg">✓ Marka eklendi!</div>
+  </div>
+  <div class="filter-bar" style="margin-bottom:12px">
+    <input type="text" id="marka-ara" placeholder="🔍  Marka ara..." oninput="renderMarkalar()" style="width:200px;font-size:13px;padding:7px 10px">
+    <select id="marka-fil-sektor" onchange="renderMarkalar()" style="font-size:13px;padding:7px 10px">
+      <option value="">Tüm sektörler</option>
+    </select>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Marka</th><th>Sektör</th><th>Bölge</th><th>m²</th><th>Sunum</th><th></th></tr></thead>
+        <tbody id="marka-tbody"></tbody>
+      </table>
+    </div>
+    <div id="marka-detay-panel">
+      <div class="card" style="background:#fafaf8;border-style:dashed;text-align:center">
+        <div class="empty">Bir markaya tıklayın — sunum yaptığınız lokasyonlar burada görünür</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOKASYOn TALEPLERİ -->
+<div id="sec-talepler" class="section">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title">📌 Yeni lokasyon talebi kaydet</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Marka *</label>
+          <input id="t-marka" placeholder="Marka adı" list="t-marka-list">
+          <datalist id="t-marka-list"></datalist>
+        </div>
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="field"><label>Şehir *</label><input id="t-sehir" placeholder="Mersin"></div>
+          <div class="field"><label>Cadde / Bölge</label><input id="t-cadde" placeholder="GMK Bulvarı"></div>
+        </div>
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="field"><label>Min m²</label><input id="t-minm2" type="number" placeholder="80"></div>
+          <div class="field"><label>Max m²</label><input id="t-maxm2" type="number" placeholder="250"></div>
+        </div>
+        <div class="grid2" style="margin-bottom:10px">
+          <div class="field"><label>Max kira (₺)</label><input id="t-maxkira" type="number" placeholder="30000"></div>
+          <div class="field"><label>Kaynak</label>
+            <select id="t-kaynak"><option>Toplantı</option><option>Mail</option><option>Telefon</option><option>Diğer</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px"><label>Hava parası</label>
+          <select id="t-hava"><option value="">Fark etmez</option><option value="hayir">Olmasın</option><option value="evet">Olabilir</option></select>
+        </div>
+        <div class="field" style="margin-bottom:1rem"><label>Not / Detay</label><textarea id="t-not" placeholder="Marka temsilcisinin belirttiği detaylar..."></textarea></div>
+        <button class="btn btn-primary" onclick="talepKaydet()">📌 Talebi Kaydet</button>
+        <div id="talep-msg" class="success-msg">✓ Talep kaydedildi!</div>
+      </div>
+    </div>
+    <div>
+      <div id="talep-eslesme-panel">
+        <div class="card" style="background:#fafaf8;border-style:dashed;text-align:center">
+          <div class="empty">Soldan bir talep seçin veya yeni kaydedin — eşleşen mağazalar burada görünür</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;margin-top:0">
+    <div style="padding:12px 16px;border-bottom:1px solid #e0ddd6;display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600">Kayıtlı talepler</span>
+      <select id="fil-talep-durum" onchange="renderTalepler()" style="width:auto;font-size:12px;padding:5px 8px;margin-left:auto">
+        <option value="">Tümü</option><option value="Açık">Açık</option><option value="Eşleşti">Eşleşti</option><option value="Kapandı">Kapandı</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th>Marka</th><th>Şehir</th><th>Cadde/Bölge</th><th>m²</th><th>Max kira</th><th>Hava</th><th>Kaynak</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="talep-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SUNUMLAR -->
+<div id="sec-sunumlar" class="section">
+  <div class="filter-bar">
+    <select id="sun-marka" onchange="renderSunumlar()"><option value="">Tüm markalar</option></select>
+    <select id="sun-durum" onchange="renderSunumlar()"><option value="">Tüm durumlar</option><option>Bekliyor</option><option>Sunuldu</option><option>Olumlu</option><option>Olumsuz</option><option>Kiralandı</option></select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead><tr><th>Mağaza</th><th>Şehir</th><th>Hava ₺</th><th>Marka</th><th>Tarih</th><th>Durum</th><th>Not</th></tr></thead>
+      <tbody id="sunum-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EKİP & PERFORMANS -->
+<div id="sec-ekip" class="section">
+
+  <!-- Ekip üyesi yönetimi -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">👥 Ekip üyeleri</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      <div class="field" style="min-width:160px"><label>Ad Soyad *</label><input id="eu-ad" placeholder="Ahmet Yılmaz"></div>
+      <div class="field" style="min-width:100px"><label>Ünvan</label><input id="eu-unvan" placeholder="Kiralama Uzmanı"></div>
+      <div class="field"><label>Renk</label><input id="eu-renk" type="color" value="#6366f1" style="width:48px;height:38px;padding:2px;border-radius:8px;cursor:pointer"></div>
+      <button class="btn btn-primary" onclick="ekipUyesiEkle()" style="align-self:flex-end">Ekle</button>
+    </div>
+    <div id="ekip-uye-listesi" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div>
+  </div>
+
+  <!-- Dönem seçimi -->
+  <div class="filter-bar" style="margin-bottom:1rem">
+    <select id="perf-yil" onchange="renderEkip()" style="font-size:13px;padding:7px 10px"></select>
+    <select id="perf-ay" onchange="renderEkip()" style="font-size:13px;padding:7px 10px">
+      <option value="">Tüm yıl</option>
+      <option value="1">Ocak</option><option value="2">Şubat</option><option value="3">Mart</option>
+      <option value="4">Nisan</option><option value="5">Mayıs</option><option value="6">Haziran</option>
+      <option value="7">Temmuz</option><option value="8">Ağustos</option><option value="9">Eylül</option>
+      <option value="10">Ekim</option><option value="11">Kasım</option><option value="12">Aralık</option>
+    </select>
+    <select id="perf-kisi" onchange="renderEkip()" style="font-size:13px;padding:7px 10px">
+      <option value="">Tüm ekip</option>
+    </select>
+  </div>
+
+  <!-- Özet kartları -->
+  <div id="ekip-ozet" class="grid4" style="margin-bottom:1.5rem"></div>
+
+  <!-- Kişi bazlı performans -->
+  <div id="ekip-kisi-kartlar" class="grid2" style="margin-bottom:1.5rem"></div>
+
+  <!-- Kiralama listesi -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid #e0ddd6;font-size:14px;font-weight:600">Kiralama geçmişi — Bizim Kiraladık</div>
+    <table>
+      <thead><tr><th>Üreten</th><th>Çalışan(lar)</th><th>Mağaza</th><th>Şehir / Cadde</th><th>Marka</th><th>Kira ₺</th><th>Tarih</th></tr></thead>
+      <tbody id="ekip-kiralama-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const DB='loc_crm_desktop_v1';
+let data=load();
+let editId=null;
+let markaRows=[];
+
+function load(){
+  try{
+    const r=localStorage.getItem(DB);
+    const d=r?JSON.parse(r):{magazalar:[],markalar:[],talepler:[],ekip:[]};
+    const eski=new Set(['Bekliyor','Sunuldu','Olumlu','Olumsuz','Kiralandı']);
+    (d.magazalar||[]).forEach(m=>{if(eski.has(m.durum))m.durum='Aktif';});
+    if(!d.talepler)d.talepler=[];
+    if(!d.ekip)d.ekip=[];
+    return d;
+  }catch(e){return{magazalar:[],markalar:[],talepler:[],ekip:[]}}
+}
+
+const SUPABASE_URL = 'https://ywhcwnaihskdurvfaaor.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3aGN3bmFpaHNrZHVydmZhYW9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxODUwNjYsImV4cCI6MjA5Nzc2MTA2Nn0.TFMKOppBssX-FKUJXNEaDvhuqwF_mKEcZZQ4yuVM2IM';
+
+// Supabase'e kaydet (debounce ile — 1.5 sn bekle, ardışık değişiklikleri birleştir)
+let saveTimer = null;
+function save(){
+  try{localStorage.setItem(DB, JSON.stringify(data));}catch(e){}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToCloud, 1500);
+  updateSyncStatus('pending');
+}
+
+async function saveToCloud(){
+  try{
+    const res = await fetch(SUPABASE_URL+'/rest/v1/crm_data?id=eq.main', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer '+SUPABASE_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({payload: data, updated_at: new Date().toISOString()})
+    });
+    if(res.ok) updateSyncStatus('ok');
+    else updateSyncStatus('error');
+  }catch(e){
+    updateSyncStatus('error');
+  }
+}
+
+async function loadFromCloud(){
+  try{
+    const res = await fetch(SUPABASE_URL+'/rest/v1/crm_data?id=eq.main&select=payload,updated_at', {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer '+SUPABASE_KEY
+      }
+    });
+    const rows = await res.json();
+    if(rows&&rows[0]&&rows[0].payload){
+      const cloudData = rows[0].payload;
+      // Eski durumları migrate et
+      const eski=new Set(['Bekliyor','Sunuldu','Olumlu','Olumsuz','Kiralandı']);
+      (cloudData.magazalar||[]).forEach(m=>{if(eski.has(m.durum))m.durum='Aktif';});
+      data = cloudData;
+      if(!data.talepler)data.talepler=[];
+      if(!data.ekip)data.ekip=[];
+      try{localStorage.setItem(DB, JSON.stringify(data));}catch(e){}
+      updateSyncStatus('ok');
+      renderPano();
+    }
+  }catch(e){
+    updateSyncStatus('error');
+    console.log('Bulut yüklenemedi, yerel veri kullanılıyor');
+  }
+}
+
+function updateSyncStatus(durum){
+  const el = document.getElementById('sync-status');
+  if(!el)return;
+  if(durum==='ok')      el.innerHTML = '☁️ Senkron';
+  else if(durum==='pending') el.innerHTML = '🔄 Kaydediliyor...';
+  else                  el.innerHTML = '⚠️ Bağlantı yok';
+}
+
+
+function showTab(t){
+  const ids=['pano','magazalar','yeni','markalar','talepler','sunumlar','ekip'];
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',ids[i]===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  if(t==='pano')renderPano();
+  if(t==='magazalar')renderMagaza();
+  if(t==='yeni'){renderMarkaSatirlari();renderOneri();renderTalepEslesmesi();}
+  if(t==='markalar')renderMarkalar();
+  if(t==='talepler')renderTalepler();
+  if(t==='sunumlar')renderSunumlar();
+  if(t==='ekip')renderEkip();
+}
+
+function showMsg(id){
+  const el=document.getElementById(id);
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+
+/* ---- PANO ---- */
+function renderPano(){
+  const m=data.magazalar;
+  const sayac={'Aktif':0,'Pasif':0,'Bizim Kiraladık':0,'Başkası Kiraladı':0};
+  m.forEach(x=>{if(x.durum in sayac)sayac[x.durum]++;});
+  const acik=(data.talepler||[]).filter(t=>t.durum==='Açık');
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-lbl">Toplam mağaza</div><div class="stat-num">${m.length}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Aktif</div><div class="stat-num" style="color:#166534">${sayac['Aktif']}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Bizim Kiraladık</div><div class="stat-num" style="color:#3730a3">${sayac['Bizim Kiraladık']}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Başkası Kiraladı</div><div class="stat-num" style="color:#991b1b">${sayac['Başkası Kiraladı']}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Açık talepler</div><div class="stat-num" style="color:#1d4ed8">${acik.length}</div></div>
+  `;
+  const son=m.slice().sort((a,b)=>b.tarih-a.tarih).slice(0,6);
+  document.getElementById('son-aktivite').innerHTML=son.length?son.map(x=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0ede8">
+      <div style="flex:1">
+        <span style="font-size:13px;font-weight:500">${x.ad}</span>
+        <span style="font-size:11px;color:#888;margin-left:6px">${x.sehir}${x.cadde?' · '+x.cadde:''}</span>
+        ${x.hava&&Number(x.hava)>0?`<span class="hava-tag" style="margin-left:6px">${Number(x.hava).toLocaleString('tr-TR')}₺</span>`:''}
+      </div>
+      <span class="badge b-${x.durum.toLowerCase().replace(/ı/g,'i')}">${x.durum}</span>
+    </div>
+  `).join(''):'<div class="empty">Henüz veri yok</div>';
+
+  document.getElementById('pano-talepler').innerHTML=acik.length?acik.slice(0,6).map(t=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0ede8;cursor:pointer" onclick="showTab('talepler');setTimeout(()=>talepDetay('${t.id}'),100)">
+      <div style="flex:1">
+        <span style="font-size:13px;font-weight:500">${t.marka}</span>
+        <span style="font-size:11px;color:#888;margin-left:6px">${t.sehir}${t.cadde?' · '+t.cadde:''}</span>
+      </div>
+      <span class="kaynak-badge kb-${t.kaynak.toLowerCase().replace('ı','i')}">${t.kaynak}</span>
+    </div>
+  `).join('')+'<div style="font-size:11px;color:#aaa;margin-top:8px;text-align:right;cursor:pointer" onclick="showTab(\'talepler\')">Tümünü gör →</div>':'<div style="padding:16px 0;font-size:13px;color:#aaa">Açık talep yok</div>';
+}
+
+/* ---- MAĞAZALAR ---- */
+function bc(d){
+  const map={'Aktif':'aktif','Pasif':'pasif','Bizim Kiraladık':'bizim-kiraladi','Başkası Kiraladı':'baskasi-kiraladi',
+             'Bekliyor':'bekliyor','Sunuldu':'sunuldu','Olumlu':'olumlu','Olumsuz':'olumsuz','Kiralandı':'kiralandi'};
+  return 'badge b-'+(map[d]||d.toLowerCase().replace(/ı/g,'i').replace(/İ/g,'i').replace(/\s+/g,'-'));
+}
+
+function renderMagaza(){
+  const ara=(document.getElementById('ara').value||'').toLowerCase();
+  const fS=document.getElementById('fil-sehir').value;
+  const fD=document.getElementById('fil-durum').value;
+  const fH=document.getElementById('fil-hava').value;
+  const sehirler=[...new Set(data.magazalar.map(x=>x.sehir))].sort();
+  const sel=document.getElementById('fil-sehir');
+  const prev=sel.value;
+  sel.innerHTML='<option value="">Tüm şehirler</option>'+sehirler.map(s=>`<option${s===prev?' selected':''}>${s}</option>`).join('');
+  const list=data.magazalar.filter(x=>{
+    return(!ara||(x.ad+x.sehir+(x.cadde||'')).toLowerCase().includes(ara))&&
+           (!fS||x.sehir===fS)&&(!fD||x.durum===fD)&&
+           (!fH||(fH==='evet'?Number(x.hava)>0:!x.hava||Number(x.hava)===0));
+  }).sort((a,b)=>b.tarih-a.tarih);
+  const tbody=document.getElementById('magaza-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty">Mağaza bulunamadı</div></td></tr>';return}
+  tbody.innerHTML=list.map(x=>`
+    <tr>
+      <td style="font-weight:500">${x.ad}</td>
+      <td>${x.sehir}${x.cadde?'<br><span style="font-size:11px;color:#888">'+x.cadde+'</span>':''}</td>
+      <td>${x.m2?x.m2+' m²':'-'}</td>
+      <td>${x.kira?Number(x.kira).toLocaleString('tr-TR')+'₺':'-'}</td>
+      <td>${x.hava&&Number(x.hava)>0?`<span class="hava-tag">${Number(x.hava).toLocaleString('tr-TR')}₺</span>`:'-'}</td>
+      <td><span class="${bc(x.durum)}">${x.durum}</span></td>
+      <td>${(x.sunumlar||[]).slice(0,3).map(s=>`<span class="tag">${s.marka}</span>`).join('')}${(x.sunumlar||[]).length>3?`<span class="tag">+${(x.sunumlar||[]).length-3}</span>`:''}</td>
+      <td><div style="display:flex;gap:3px">
+        <button class="btn btn-sm" onclick="detay('${x.id}')"><i class="ti ti-eye"></i></button>
+        <button class="btn btn-sm" onclick="duzenle('${x.id}')"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="sil('${x.id}')"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function detay(id){
+  const x=data.magazalar.find(m=>m.id===id);if(!x)return;
+  const eslesenTalepler=(data.talepler||[]).filter(t=>t.durum==='Açık'&&talepEslesirMi(t,x));
+  const p=document.getElementById('detail-panel');
+  p.style.display='block';
+  p.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+      <button class="btn btn-sm" onclick="document.getElementById('detail-panel').style.display='none'"><i class="ti ti-arrow-left"></i> Geri</button>
+      <span style="font-size:16px;font-weight:600">${x.ad}</span>
+      <span class="${bc(x.durum)}">${x.durum}</span>
+      ${x.hava&&Number(x.hava)>0?`<span class="hava-tag">Hava: ${Number(x.hava).toLocaleString('tr-TR')}₺</span>`:''}
+      <button class="btn btn-sm" style="margin-left:auto" onclick="duzenle('${x.id}')"><i class="ti ti-edit"></i> Düzenle</button>
+    </div>
+    ${eslesenTalepler.length?`
+    <div class="talep-eslesme-kutu" style="margin-bottom:1rem">
+      <div style="font-weight:600;margin-bottom:6px">📍 Bu mağaza için ${eslesenTalepler.length} açık talep var!</div>
+      ${eslesenTalepler.map(t=>`<span class="tag" style="background:#bbf7d0;color:#14532d">${t.marka} · ${t.kaynak}</span>`).join('')}
+    </div>`:''}
+    <div class="grid4" style="margin-bottom:1rem">
+      <div class="stat-card"><div class="stat-lbl">Şehir</div><div style="font-size:14px;font-weight:500;margin-top:4px">${x.sehir}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Cadde / AVM</div><div style="font-size:14px;font-weight:500;margin-top:4px">${x.cadde||'-'}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Metrekare</div><div style="font-size:14px;font-weight:500;margin-top:4px">${x.m2?x.m2+' m²':'-'}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Kira</div><div style="font-size:14px;font-weight:500;margin-top:4px">${x.kira?Number(x.kira).toLocaleString('tr-TR')+' ₺':'-'}</div></div>
+    </div>
+    ${x.iletisim?`<div style="font-size:13px;margin-bottom:10px"><span style="color:#888">İletişim:</span> ${x.iletisim}</div>`:''}
+    ${x.not?`<div style="font-size:13px;margin-bottom:14px;padding:10px;background:#f9f9f7;border-radius:8px">${x.not}</div>`:''}
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">Sunumlar (${(x.sunumlar||[]).length})</div>
+    ${(x.sunumlar||[]).length?(x.sunumlar||[]).map(s=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0ede8">
+        <span style="flex:1;font-size:13px;font-weight:500">${s.marka}</span>
+        <select style="width:140px;font-size:12px;padding:5px" onchange="sunumGuncelle('${x.id}','${s.id}',this.value)">
+          ${['Bekliyor','Sunuldu','Olumlu','Olumsuz','Kiralandı'].map(d=>`<option${s.durum===d?' selected':''}>${d}</option>`).join('')}
+        </select>
+        <span style="font-size:11px;color:#aaa">${s.tarih||''}</span>
+      </div>
+    `).join(''):'<div class="empty" style="padding:1.5rem">Sunum eklenmemiş</div>'}
+  `;
+}
+
+function sunumGuncelle(mid,sid,yeni){
+  const m=data.magazalar.find(x=>x.id===mid);if(!m)return;
+  const s=(m.sunumlar||[]).find(x=>x.id===sid);if(s)s.durum=yeni;
+  save();
+}
+
+/* ---- FORM ---- */
+function renderTalepEslesmesi(){
+  const sehir=(document.getElementById('f-sehir').value||'').toLowerCase().trim();
+  const cadde=(document.getElementById('f-cadde').value||'').toLowerCase().trim();
+  if(!sehir){document.getElementById('talep-eslesme-bolum').style.display='none';return}
+  const eslesenler=(data.talepler||[]).filter(t=>{
+    if(t.durum!=='Açık')return false;
+    if(!t.sehir.toLowerCase().includes(sehir))return false;
+    if(cadde&&t.cadde&&!t.cadde.toLowerCase().includes(cadde)&&!cadde.includes(t.cadde.toLowerCase()))return false;
+    return true;
+  });
+  if(!eslesenler.length){document.getElementById('talep-eslesme-bolum').style.display='none';return}
+  document.getElementById('talep-eslesme-bolum').style.display='block';
+  document.getElementById('talep-eslesme-liste').innerHTML=eslesenler.map(t=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+      <strong>${t.marka}</strong>
+      <span style="font-size:12px">${t.sehir}${t.cadde?' · '+t.cadde:''}</span>
+      ${t.minm2||t.maxm2?`<span class="tag">${t.minm2||'0'}–${t.maxm2||'∞'} m²</span>`:''}
+      <span class="kaynak-badge kb-${t.kaynak.toLowerCase().replace('ı','i')}">${t.kaynak}</span>
+    </div>
+  `).join('');
+}
+
+function renderOneri(){
+  // Artık sadece m² uyumu — cadde kontrolü AI ile yapılıyor
+  const sehir=(document.getElementById('f-sehir').value||'').trim();
+  const m2=Number(document.getElementById('f-m2').value||0);
+  const sunulanlar=new Set((markaRows||[]).map(r=>r.marka).filter(Boolean));
+
+  // m² girilmemişse veya şehir yoksa öneri gösterme
+  if(!sehir||!m2){
+    document.getElementById('oneri-bolum').style.display='none';
+    return;
+  }
+
+  // m² bilgisi girilmiş ve aralığa uyan markalar (boş m² olanları gösterme)
+  const onerilecek=data.markalar.filter(mk=>{
+    if(sunulanlar.has(mk.ad))return false;
+    if(!mk.minm2&&!mk.maxm2)return false; // m² bilgisi girilmemiş → önerme
+    if(mk.minm2&&m2<Number(mk.minm2))return false;
+    if(mk.maxm2&&m2>Number(mk.maxm2))return false;
+    return true;
+  });
+
+  if(!onerilecek.length){
+    document.getElementById('oneri-bolum').style.display='none';
+    return;
+  }
+  document.getElementById('oneri-baslik').textContent='💡 m² uyumlu markalar ('+onerilecek.length+')';
+  document.getElementById('oneri-bolum').style.display='block';
+  document.getElementById('oneri-chipler').innerHTML=onerilecek.map(mk=>`
+    <span class="oneri-chip" onclick="ekleMarkaSatiriAd('${mk.ad}')">${mk.ad}${mk.sektor?' · '+mk.sektor:''} ${mk.minm2?'('+mk.minm2+'–'+(mk.maxm2||'∞')+'m²)':''}</span>
+  `).join('');
+}
+
+let aiArastirmaCache={};
+
+async function aiMarkaArastir(){
+  const sehir=(document.getElementById('f-sehir').value||'').trim();
+  const cadde=(document.getElementById('f-cadde').value||'').trim();
+  const m2=Number(document.getElementById('f-m2').value||0);
+
+  if(!sehir||!cadde){
+    alert('Lütfen önce şehir ve cadde bilgisini girin.');return;
+  }
+  if(!m2){
+    alert('Lütfen metrekare bilgisini girin — markalar m²\'ye göre filtrelenecek.');return;
+  }
+
+  const cacheKey=sehir+'|'+cadde+'|'+m2;
+  if(aiArastirmaCache[cacheKey]){
+    gosterAiSonuc(aiArastirmaCache[cacheKey]);return;
+  }
+
+  document.getElementById('ai-yukleniyor').style.display='block';
+  document.getElementById('ai-sonuc').style.display='none';
+  document.getElementById('oneri-bolum').style.display='none';
+  document.getElementById('ai-arastir-btn').disabled=true;
+
+  const sunulanlar=new Set((markaRows||[]).map(r=>r.marka).filter(Boolean));
+  const portfoydekiMarkalar=data.markalar.map(m=>m.ad).join(', ');
+
+  const prompt=`Sen bir kiralama uzmanısın. Türkiye'de kurumsal marka lokasyonu buluyorsun.
+
+Lokasyon: ${sehir} / ${cadde}
+Alan: ${m2} m²
+
+Görevin:
+1. Web araması yaparak ${sehir} ${cadde}'de şu an hangi kurumsal markalar/mağazalar olduğunu bul.
+2. Portföyümdeki markalar: ${portfoydekiMarkalar}
+3. Bu portföyden, ${m2} m² alana uygun VE o caddede henüz mağazası olmayan markaları öner.
+4. Ayrıca portföyümde olmayan ama o caddeye ve ${m2}m²'ye uygun olabilecek 3-5 marka öner.
+
+SADECE JSON döndür, başka hiçbir şey yazma:
+{
+  "caddedekiMarkalar": ["marka1", "marka2"],
+  "portfoydenOnerilecek": [{"ad":"marka","neden":"kısa açıklama"}],
+  "yeniOneri": [{"ad":"marka","neden":"kısa açıklama"}]
+}`;
+
+  try {
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const d=await resp.json();
+    const text=d.content.map(i=>i.type==='text'?i.text:'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    aiArastirmaCache[cacheKey]=parsed;
+    gosterAiSonuc(parsed);
+  } catch(e){
+    document.getElementById('ai-yukleniyor').style.display='none';
+    document.getElementById('ai-sonuc').style.display='block';
+    document.getElementById('ai-sonuc').style.background='#fef2f2';
+    document.getElementById('ai-sonuc').style.borderColor='#ef4444';
+    document.getElementById('ai-sonuc').style.color='#991b1b';
+    document.getElementById('ai-sonuc').textContent='Araştırma sırasında hata oluştu: '+e.message;
+  }
+  document.getElementById('ai-arastir-btn').disabled=false;
+}
+
+function gosterAiSonuc(parsed){
+  document.getElementById('ai-yukleniyor').style.display='none';
+  const sunulanlar=new Set((markaRows||[]).map(r=>r.marka).filter(Boolean));
+
+  // Caddedeki markaları göster
+  let html='';
+  if(parsed.caddedekiMarkalar?.length){
+    html+=`<div style="margin-bottom:8px"><strong>Bu caddede mevcut markalar:</strong> ${parsed.caddedekiMarkalar.map(m=>`<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:20px;font-size:11px;margin:2px;display:inline-block">${m}</span>`).join('')}</div>`;
+  }
+
+  // Öneri chipler
+  const tumOneri=[...(parsed.portfoydekiMarkalar||[]),...(parsed.yeniOneri||[])].filter(o=>!sunulanlar.has(o.ad));
+
+  if(tumOneri.length){
+    document.getElementById('oneri-baslik').innerHTML='🤖 AI önerileri — o caddede yok, m²\'ye uygun';
+    document.getElementById('oneri-bolum').style.display='block';
+    document.getElementById('oneri-chipler').innerHTML=tumOneri.map(o=>`
+      <span class="oneri-chip" onclick="ekleMarkaSatiriAd('${o.ad.replace(/'/g,"\\'")}')">
+        ${o.ad} <span style="font-size:10px;opacity:0.8">— ${o.neden}</span>
+      </span>
+    `).join('');
+  }
+
+  // Sonuç kutusu
+  if(html){
+    document.getElementById('ai-sonuc').style.display='block';
+    document.getElementById('ai-sonuc').style.background='#f0fdf4';
+    document.getElementById('ai-sonuc').style.borderColor='#10b981';
+    document.getElementById('ai-sonuc').style.color='#065f46';
+    document.getElementById('ai-sonuc').innerHTML=html;
+  }
+}
+
+function ekleMarkaSatiriAd(ad){
+  markaRows.push({id:'sr'+Date.now()+Math.random(),marka:ad,durum:'Bekliyor',tarih:'',not:''});
+  renderMarkaSatirlari();renderOneri();
+  if(!data.markalar.find(m=>m.ad===ad)){
+    data.markalar.push({id:'mk'+Date.now(),ad,sektor:'',bolge:'',minm2:'',maxm2:''});save();
+  }
+}
+
+function ekleMarkaSatiri(marka='',durum='Bekliyor',tarih='',not=''){
+  markaRows.push({id:'sr'+Date.now()+Math.random(),marka,durum,tarih,not});
+  renderMarkaSatirlari();
+}
+
+function renderMarkaSatirlari(){
+  const ml=data.markalar.map(m=>m.ad);
+  document.getElementById('sunum-ekle-list').innerHTML=markaRows.map(r=>`
+    <div class="sunum-satir">
+      <input style="width:155px" placeholder="Marka adı" value="${r.marka}" list="marka-dl" oninput="updateRow('${r.id}','marka',this.value);renderOneri()">
+      <select style="width:120px" onchange="updateRow('${r.id}','durum',this.value)">
+        ${['Bekliyor','Sunuldu','Olumlu','Olumsuz','Kiralandı'].map(d=>`<option${r.durum===d?' selected':''}>${d}</option>`).join('')}
+      </select>
+      <input type="date" style="width:145px" value="${r.tarih}" onchange="updateRow('${r.id}','tarih',this.value)">
+      <input style="width:160px" placeholder="Not" value="${r.not}" onchange="updateRow('${r.id}','not',this.value)">
+      <button class="btn btn-sm btn-danger" onclick="silRow('${r.id}')"><i class="ti ti-trash"></i></button>
+    </div>
+  `).join('')+`<datalist id="marka-dl">${ml.map(m=>`<option value="${m}">`).join('')}</datalist>`;
+}
+
+function updateRow(id,key,val){const r=markaRows.find(x=>x.id===id);if(r)r[key]=val}
+function silRow(id){markaRows=markaRows.filter(x=>x.id!==id);renderMarkaSatirlari();renderOneri()}
+
+function kaydet(){
+  const ad=document.getElementById('f-ad').value.trim();
+  const sehir=document.getElementById('f-sehir').value.trim();
+  if(!ad||!sehir){alert('Mağaza adı ve şehir zorunludur');return}
+  markaRows.forEach(r=>{
+    if(r.marka&&!data.markalar.find(m=>m.ad===r.marka))
+      data.markalar.push({id:'mk'+Date.now()+Math.random(),ad:r.marka,sektor:'',bolge:'',minm2:'',maxm2:''});
+  });
+  const obj={
+    id:editId||'m'+Date.now(),ad,sehir,
+    cadde:document.getElementById('f-cadde').value.trim(),
+    iletisim:document.getElementById('f-iletisim').value.trim(),
+    m2:document.getElementById('f-m2').value,
+    kira:document.getElementById('f-kira').value,
+    hava:document.getElementById('f-hava').value,
+    sektor:document.getElementById('f-sektor').value,
+    not:document.getElementById('f-not').value.trim(),
+    durum:document.getElementById('f-durum').value,
+    sunumlar:markaRows.map(r=>({id:r.id,marka:r.marka,durum:r.durum,tarih:r.tarih,not:r.not})),
+    tarih:Date.now()
+  };
+  if(editId){const i=data.magazalar.findIndex(x=>x.id===editId);if(i>-1)data.magazalar[i]=obj;}
+  else data.magazalar.unshift(obj);
+  save();editId=null;
+  showMsg('kayit-msg');
+  formTemizle();renderPano();
+}
+
+function formTemizle(){
+  ['f-ad','f-sehir','f-cadde','f-iletisim','f-m2','f-kira','f-hava','f-not'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-durum').value='Aktif';
+  document.getElementById('f-sektor').value='';
+  markaRows=[];renderMarkaSatirlari();
+  document.getElementById('oneri-bolum').style.display='none';
+  document.getElementById('talep-eslesme-bolum').style.display='none';
+  editId=null;
+  document.getElementById('form-baslik').textContent='Yeni mağaza ekle';
+}
+
+function duzenle(id){
+  const x=data.magazalar.find(m=>m.id===id);if(!x)return;
+  editId=id;
+  document.getElementById('f-ad').value=x.ad;
+  document.getElementById('f-sehir').value=x.sehir;
+  document.getElementById('f-cadde').value=x.cadde||'';
+  document.getElementById('f-iletisim').value=x.iletisim||'';
+  document.getElementById('f-m2').value=x.m2||'';
+  document.getElementById('f-kira').value=x.kira||'';
+  document.getElementById('f-hava').value=x.hava||'';
+  document.getElementById('f-not').value=x.not||'';
+  document.getElementById('f-durum').value=x.durum;
+  document.getElementById('f-sektor').value=x.sektor||'';
+  markaRows=(x.sunumlar||[]).map(s=>({...s}));
+  document.getElementById('form-baslik').textContent='Düzenle: '+x.ad;
+  document.getElementById('detail-panel').style.display='none';
+  showTab('yeni');
+}
+
+function sil(id){
+  if(!confirm('Bu mağazayı silmek istediğinizden emin misiniz?'))return;
+  data.magazalar=data.magazalar.filter(x=>x.id!==id);
+  save();renderMagaza();renderPano();
+}
+
+/* ---- MARKALAR ---- */
+function markaSave(){
+  const ad=document.getElementById('m-ad').value.trim();
+  if(!ad){alert('Marka adı zorunludur');return}
+  if(data.markalar.find(m=>m.ad===ad)){alert('Bu marka zaten listede');return}
+  data.markalar.push({id:'mk'+Date.now(),ad,sektor:document.getElementById('m-sektor').value,bolge:document.getElementById('m-bolge').value.trim(),minm2:document.getElementById('m-minm2').value,maxm2:document.getElementById('m-maxm2').value});
+  save();
+  ['m-ad','m-bolge','m-minm2','m-maxm2'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('m-sektor').value='';
+  showMsg('marka-msg');
+  renderMarkalar();
+}
+
+const SEKTOR_LISTESI=['Moda / Giyim','Ayakkabı / Aksesuar','Gıda / Restoran','Kafe / Kahve','Kozmetik / Güzellik','Elektronik','Spor','Ev / Dekorasyon','Tekstil / Ev Tekstili','Optik / Sağlık','Çocuk / Oyuncak','Telekomünikasyon','Market / Süpermarket','Diğer'];
+
+let aktifMarkaId=null;
+
+function renderMarkalar(){
+  const tbody=document.getElementById('marka-tbody');
+  if(!data.markalar.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">Henüz marka eklenmedi</div></td></tr>';return}
+
+  // Filtre dropdown'unu güncelle
+  const filSel=document.getElementById('marka-fil-sektor');
+  if(filSel){
+    const mevcut=filSel.value;
+    const sektorler=[...new Set(data.markalar.map(m=>m.sektor).filter(Boolean))].sort();
+    filSel.innerHTML='<option value="">Tüm sektörler</option>'+sektorler.map(s=>`<option${s===mevcut?' selected':''}>${s}</option>`).join('');
+  }
+
+  const ara=(document.getElementById('marka-ara')?.value||'').toLowerCase();
+  const filSektor=filSel?.value||'';
+
+  const sorted=[...data.markalar]
+    .filter(mk=>{
+      if(ara&&!mk.ad.toLowerCase().includes(ara))return false;
+      if(filSektor&&mk.sektor!==filSektor)return false;
+      return true;
+    })
+    .sort((a,b)=>{
+      const sa=data.magazalar.reduce((t,x)=>t+((x.sunumlar||[]).filter(s=>s.marka===a.ad).length),0);
+      const sb=data.magazalar.reduce((t,x)=>t+((x.sunumlar||[]).filter(s=>s.marka===b.ad).length),0);
+      return sb-sa;
+    });
+
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">Marka bulunamadı</div></td></tr>';return}
+
+  tbody.innerHTML=sorted.map(mk=>{
+    const ss=data.magazalar.reduce((t,x)=>t+((x.sunumlar||[]).filter(s=>s.marka===mk.ad).length),0);
+    const aktif=aktifMarkaId===mk.id;
+    // Sektör sticker renkleri
+    const sektorRenk={
+      'Moda / Giyim':         'background:#ede9fe;color:#5b21b6',
+      'Ayakkabı / Aksesuar':  'background:#fce7f3;color:#9d174d',
+      'Gıda / Restoran':      'background:#fef3c7;color:#92400e',
+      'Kafe / Kahve':         'background:#fff7ed;color:#9a3412',
+      'Kozmetik / Güzellik':  'background:#fce7f3;color:#831843',
+      'Elektronik':           'background:#dbeafe;color:#1e40af',
+      'Spor':                 'background:#dcfce7;color:#166534',
+      'Ev / Dekorasyon':      'background:#f0fdf4;color:#14532d',
+      'Tekstil / Ev Tekstili':'background:#e0f2fe;color:#075985',
+      'Optik / Sağlık':       'background:#f0fdf4;color:#065f46',
+      'Çocuk / Oyuncak':      'background:#fef9c3;color:#713f12',
+      'Telekomünikasyon':      'background:#e0e7ff;color:#3730a3',
+      'Market / Süpermarket': 'background:#ecfdf5;color:#065f46',
+      'Diğer':                'background:#f3f4f6;color:#6b7280'
+    };
+    const stRenk=mk.sektor&&sektorRenk[mk.sektor]?sektorRenk[mk.sektor]:'background:#f3f4f6;color:#6b7280';
+    const sektorHTML=mk.sektor
+      ? `<span onclick="event.stopPropagation();markaSektor('${mk.id}','__edit__')" title="Değiştirmek için tıkla" style="${stRenk};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;display:inline-block">${mk.sektor}</span>`
+      : `<span onclick="event.stopPropagation();markaSektor('${mk.id}','__edit__')" style="font-size:12px;color:#bbb;cursor:pointer">+ ekle</span>`;
+
+    const m2HTML=mk.minm2||mk.maxm2
+      ? `<span onclick="event.stopPropagation();markaM2('${mk.id}','__edit__')" title="Değiştirmek için tıkla" style="background:#e0f2fe;color:#075985;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;display:inline-block">${mk.minm2||'0'}–${mk.maxm2||'∞'} m²</span>`
+      : `<span onclick="event.stopPropagation();markaM2('${mk.id}','__edit__')" style="font-size:12px;color:#bbb;cursor:pointer">+ ekle</span>`;
+
+    return`<tr style="cursor:pointer;background:${aktif?'#f0fdf4':''}" onclick="markaDetay('${mk.id}')">
+      <td style="font-weight:500;font-size:13px">${mk.ad}</td>
+      <td id="sektor-cell-${mk.id}" onclick="event.stopPropagation()">${sektorHTML}</td>
+      <td style="font-size:12px">${mk.bolge||'—'}</td>
+      <td id="m2-cell-${mk.id}" onclick="event.stopPropagation()">${m2HTML}</td>
+      <td><span class="badge ${ss>0?'b-sunuldu':'b-bekliyor'}">${ss} sunum</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();silMarka('${mk.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function markaSektor(id, val){
+  const mk=data.markalar.find(x=>x.id===id);
+  if(!mk)return;
+  if(val==='__edit__'){
+    // Sticker'a tıklayınca hücreyi dropdown'a çevir
+    const cell=document.getElementById('sektor-cell-'+id);
+    if(!cell)return;
+    cell.innerHTML=`<select style="font-size:12px;padding:3px 6px;width:100%" onchange="markaSektor('${id}',this.value)" onblur="renderMarkalar()" autofocus>
+      <option value="">— seçin —</option>
+      ${SEKTOR_LISTESI.map(s=>`<option${mk.sektor===s?' selected':''}>${s}</option>`).join('')}
+    </select>`;
+    cell.querySelector('select').focus();
+    return;
+  }
+  mk.sektor=val;
+  save();
+  renderMarkalar();
+  // Filtre dropdown güncelle
+  const filSel=document.getElementById('marka-fil-sektor');
+  if(filSel){
+    const sektorler=[...new Set(data.markalar.map(m=>m.sektor).filter(Boolean))].sort();
+    const prev=filSel.value;
+    filSel.innerHTML='<option value="">Tüm sektörler</option>'+sektorler.map(s=>`<option${s===prev?' selected':''}>${s}</option>`).join('');
+  }
+}
+
+function markaM2(id, val){
+  const mk=data.markalar.find(x=>x.id===id);
+  if(!mk)return;
+  if(val==='__edit__'){
+    const cell=document.getElementById('m2-cell-'+id);
+    if(!cell)return;
+    cell.innerHTML=`
+      <div style="display:flex;gap:4px;align-items:center">
+        <input type="number" id="m2min-${id}" value="${mk.minm2||''}" placeholder="Min" style="width:60px;font-size:12px;padding:3px 5px" onkeydown="if(event.key==='Enter')markaM2Save('${id}')">
+        <span style="font-size:11px;color:#aaa">–</span>
+        <input type="number" id="m2max-${id}" value="${mk.maxm2||''}" placeholder="Max" style="width:60px;font-size:12px;padding:3px 5px" onkeydown="if(event.key==='Enter')markaM2Save('${id}')">
+        <button class="btn btn-sm" style="padding:3px 7px;font-size:11px" onclick="markaM2Save('${id}')">✓</button>
+      </div>`;
+    cell.querySelector('input').focus();
+    return;
+  }
+}
+
+function markaM2Save(id){
+  const mk=data.markalar.find(x=>x.id===id);
+  if(!mk)return;
+  mk.minm2=document.getElementById('m2min-'+id)?.value||'';
+  mk.maxm2=document.getElementById('m2max-'+id)?.value||'';
+  save();
+  renderMarkalar();
+}
+
+function markaDetay(id){
+  aktifMarkaId=id;
+  const mk=data.markalar.find(x=>x.id===id);
+  if(!mk)return;
+  // Bu markaya sunum yapılan tüm mağazaları bul
+  const sunumlar=[];
+  data.magazalar.forEach(mag=>{
+    (mag.sunumlar||[]).forEach(s=>{
+      if(s.marka===mk.ad) sunumlar.push({mag,sunum:s});
+    });
+  });
+  sunumlar.sort((a,b)=>(b.sunum.tarih||'').localeCompare(a.sunum.tarih||''));
+  const olumlu=sunumlar.filter(x=>x.sunum.durum==='Olumlu').length;
+  const olumsuz=sunumlar.filter(x=>x.sunum.durum==='Olumsuz').length;
+  const sunuldu=sunumlar.filter(x=>x.sunum.durum==='Sunuldu').length;
+  const kiralandi=sunumlar.filter(x=>x.sunum.durum==='Kiralandı').length;
+  const panel=document.getElementById('marka-detay-panel');
+  panel.innerHTML=`
+    <div class="card" style="position:sticky;top:70px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600">${mk.ad}</div>
+          ${mk.sektor?`<div style="font-size:12px;color:#888;margin-top:2px">${mk.sektor}</div>`:''}
+        </div>
+        <button class="btn btn-sm" onclick="aktifMarkaId=null;document.getElementById('marka-detay-panel').innerHTML='<div class=\'card\' style=\'background:#fafaf8;border-style:dashed;text-align:center\'><div class=\'empty\'>Bir markaya tıklayın</div></div>';renderMarkalar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+        <div class="stat-card"><div class="stat-lbl">Toplam sunum</div><div class="stat-num" style="font-size:20px">${sunumlar.length}</div></div>
+        <div class="stat-card"><div class="stat-lbl">Kiralandı</div><div class="stat-num" style="font-size:20px;color:#065f46">${kiralandi}</div></div>
+        <div class="stat-card"><div class="stat-lbl">Olumlu</div><div class="stat-num" style="font-size:20px;color:#166534">${olumlu}</div></div>
+        <div class="stat-card"><div class="stat-lbl">Olumsuz</div><div class="stat-num" style="font-size:20px;color:#991b1b">${olumsuz}</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Sunum yapılan lokasyonlar</div>
+      <div style="max-height:480px;overflow-y:auto">
+        ${sunumlar.length?sunumlar.map(({mag,sunum})=>`
+          <div style="padding:8px 0;border-bottom:1px solid #f0ede8">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <span style="font-size:13px;font-weight:500;flex:1">${mag.ad}</span>
+              <span class="${bc(sunum.durum)}">${sunum.durum}</span>
+            </div>
+            <div style="font-size:11px;color:#888">${mag.sehir}${mag.cadde?' · '+mag.cadde:''}${mag.m2?' · '+mag.m2+' m²':''}</div>
+            ${sunum.tarih?`<div style="font-size:11px;color:#bbb;margin-top:1px">${sunum.tarih}</div>`:''}
+            ${sunum.not&&sunum.not!=='Sunuldu'&&sunum.not!=='Sunuldu.'?`<div style="font-size:11px;color:#999;margin-top:2px;font-style:italic">${sunum.not}</div>`:''}
+          </div>
+        `).join(''):'<div class="empty" style="padding:1rem">Sunum bulunamadı</div>'}
+      </div>
+    </div>
+  `;
+  renderMarkalar();
+}
+
+function silMarka(id){
+  if(!confirm('Markayı silmek istiyor musunuz?'))return;
+  data.markalar=data.markalar.filter(x=>x.id!==id);
+  if(aktifMarkaId===id){aktifMarkaId=null;document.getElementById('marka-detay-panel').innerHTML='<div class="card" style="background:#fafaf8;border-style:dashed;text-align:center"><div class="empty">Bir markaya tıklayın</div></div>';}
+  save();renderMarkalar();renderPano();
+}
+
+/* ---- LOKASYOn TALEPLERİ ---- */
+function talepKaydet(){
+  const marka=document.getElementById('t-marka').value.trim();
+  const sehir=document.getElementById('t-sehir').value.trim();
+  if(!marka||!sehir){alert('Marka ve şehir zorunludur');return}
+  if(!data.talepler)data.talepler=[];
+  const talep={
+    id:'t'+Date.now(),marka,sehir,
+    cadde:document.getElementById('t-cadde').value.trim(),
+    minm2:document.getElementById('t-minm2').value,
+    maxm2:document.getElementById('t-maxm2').value,
+    maxkira:document.getElementById('t-maxkira').value,
+    hava:document.getElementById('t-hava').value,
+    kaynak:document.getElementById('t-kaynak').value,
+    not:document.getElementById('t-not').value.trim(),
+    durum:'Açık',tarih:Date.now()
+  };
+  data.talepler.unshift(talep);
+  if(!data.markalar.find(m=>m.ad===marka))
+    data.markalar.push({id:'mk'+Date.now(),ad:marka,sektor:'',bolge:sehir,minm2:talep.minm2,maxm2:talep.maxm2});
+  save();
+  ['t-marka','t-sehir','t-cadde','t-minm2','t-maxm2','t-maxkira','t-not'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('t-kaynak').value='Toplantı';
+  document.getElementById('t-hava').value='';
+  showMsg('talep-msg');
+  renderTalepler();renderPano();
+  talepDetay(talep.id);
+}
+
+function talepEslesirMi(t,m){
+  if(!m.sehir.toLowerCase().includes(t.sehir.toLowerCase()))return false;
+  if(t.cadde&&m.cadde&&!m.cadde.toLowerCase().includes(t.cadde.toLowerCase())&&!t.cadde.toLowerCase().includes(m.cadde.toLowerCase()))return false;
+  if(t.minm2&&m.m2&&Number(m.m2)<Number(t.minm2))return false;
+  if(t.maxm2&&m.m2&&Number(m.m2)>Number(t.maxm2))return false;
+  if(t.maxkira&&m.kira&&Number(m.kira)>Number(t.maxkira))return false;
+  if(t.hava==='hayir'&&m.hava&&Number(m.hava)>0)return false;
+  return true;
+}
+
+function eslesMePuan(t,m){
+  let p=0;
+  if(m.sehir.toLowerCase().includes(t.sehir.toLowerCase()))p+=40;
+  if(t.cadde&&m.cadde&&(m.cadde.toLowerCase().includes(t.cadde.toLowerCase())||t.cadde.toLowerCase().includes(m.cadde.toLowerCase())))p+=30;
+  if(t.minm2&&m.m2&&Number(m.m2)>=Number(t.minm2))p+=10;
+  if(t.maxm2&&m.m2&&Number(m.m2)<=Number(t.maxm2))p+=10;
+  if(t.maxkira&&m.kira&&Number(m.kira)<=Number(t.maxkira))p+=10;
+  return p;
+}
+
+function talepDetay(id){
+  const t=(data.talepler||[]).find(x=>x.id===id);if(!t)return;
+  const eslesenler=data.magazalar.filter(m=>talepEslesirMi(t,m)).map(m=>({...m,puan:eslesMePuan(t,m)})).sort((a,b)=>b.puan-a.puan);
+  const panel=document.getElementById('talep-eslesme-panel');
+  panel.innerHTML=`
+    <div class="card" style="${eslesenler.length?'border-color:#10b981':''}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+        <span style="font-size:15px;font-weight:600">${t.marka}</span>
+        <span style="font-size:12px;color:#888">${t.sehir}${t.cadde?' · '+t.cadde:''}</span>
+        <span class="badge b-${t.durum.toLowerCase().replace('ı','i')}">${t.durum}</span>
+        <button class="btn btn-sm" style="margin-left:auto" onclick="document.getElementById('talep-eslesme-panel').innerHTML='<div class=\'card\' style=\'background:#fafaf8;border-style:dashed;text-align:center\'><div class=\'empty\'>Talep seçin</div></div>'"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="font-size:12px;color:#888;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px">
+        ${t.minm2||t.maxm2?`<span class="tag">${t.minm2||'0'}–${t.maxm2||'∞'} m²</span>`:''}
+        ${t.maxkira?`<span class="tag">Max ${Number(t.maxkira).toLocaleString('tr-TR')}₺</span>`:''}
+        ${t.hava?`<span class="tag">${t.hava==='hayir'?'Hava parası olmasın':'Hava parası olabilir'}</span>`:''}
+        <span class="kaynak-badge kb-${t.kaynak.toLowerCase().replace('ı','i')}">${t.kaynak}</span>
+      </div>
+      ${t.not?`<div style="font-size:12px;padding:8px;background:#f9f9f7;border-radius:8px;margin-bottom:12px">${t.not}</div>`:''}
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">
+        ${eslesenler.length?`<span style="color:#166534">✓ ${eslesenler.length} eşleşen mağaza bulundu</span>`:'<span style="color:#aaa">Portföyde eşleşen mağaza bulunamadı</span>'}
+      </div>
+      ${eslesenler.map(m=>{
+        const sinif=m.puan>=70?'guclu':m.puan>=40?'orta':'zayif';
+        return`<div class="eslesme-card ${sinif}">
+          <div class="eslesme-puan ${sinif}">${m.puan}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500">${m.ad}</div>
+            <div style="font-size:11px;color:#888">${m.sehir}${m.cadde?' · '+m.cadde:''}${m.m2?' · '+m.m2+' m²':''}${m.kira?' · '+Number(m.kira).toLocaleString('tr-TR')+'₺':''}</div>
+          </div>
+          <span class="${bc(m.durum)}">${m.durum}</span>
+          ${m.hava&&Number(m.hava)>0?`<span class="hava-tag">${Number(m.hava).toLocaleString('tr-TR')}₺ hava</span>`:''}
+        </div>`;
+      }).join('')}
+      ${t.durum==='Açık'?`<div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-sm" onclick="talepDurumGuncelle('${t.id}','Eşleşti')">✓ Eşleşti</button>
+        <button class="btn btn-sm" onclick="talepDurumGuncelle('${t.id}','Kapandı')">Kapat</button>
+      </div>`:''}
+    </div>
+  `;
+}
+
+function talepDurumGuncelle(id,yeni){
+  const t=(data.talepler||[]).find(x=>x.id===id);if(!t)return;
+  t.durum=yeni;save();renderTalepler();renderPano();talepDetay(id);
+}
+
+function renderTalepler(){
+  if(!data.talepler)data.talepler=[];
+  const dl=document.getElementById('t-marka-list');
+  if(dl)dl.innerHTML=data.markalar.map(m=>`<option value="${m.ad}">`).join('');
+  const fD=document.getElementById('fil-talep-durum').value;
+  const list=data.talepler.filter(t=>!fD||t.durum===fD).sort((a,b)=>b.tarih-a.tarih);
+  const tbody=document.getElementById('talep-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">Talep bulunamadı</div></td></tr>';return}
+  tbody.innerHTML=list.map(t=>{
+    const es=data.magazalar.filter(m=>talepEslesirMi(t,m)).length;
+    return`<tr style="cursor:pointer" onclick="talepDetay('${t.id}')">
+      <td style="font-weight:500">${t.marka}</td>
+      <td>${t.sehir}</td>
+      <td style="font-size:12px">${t.cadde||'-'}</td>
+      <td style="font-size:12px">${t.minm2||t.maxm2?(t.minm2||'0')+'–'+(t.maxm2||'∞'):'-'}</td>
+      <td style="font-size:12px">${t.maxkira?Number(t.maxkira).toLocaleString('tr-TR'):'-'}</td>
+      <td style="font-size:12px">${t.hava==='hayir'?'Olmasın':t.hava==='evet'?'Olabilir':'-'}</td>
+      <td><span class="kaynak-badge kb-${t.kaynak.toLowerCase().replace('ı','i')}">${t.kaynak}</span></td>
+      <td>
+        <span class="badge b-${t.durum.toLowerCase().replace('ı','i')}">${t.durum}</span>
+        ${es>0?`<span class="badge b-olumlu" style="margin-left:4px">${es} eşleşme</span>`:''}
+      </td>
+      <td><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();silTalep('${t.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function silTalep(id){
+  if(!confirm('Talebi silmek istiyor musunuz?'))return;
+  data.talepler=data.talepler.filter(x=>x.id!==id);
+  save();renderTalepler();renderPano();
+}
+
+/* ---- SUNUMLAR ---- */
+function renderSunumlar(){
+  const allM=[...new Set(data.magazalar.flatMap(x=>(x.sunumlar||[]).map(s=>s.marka)))].sort();
+  const mSel=document.getElementById('sun-marka');
+  const prev=mSel.value;
+  mSel.innerHTML='<option value="">Tüm markalar</option>'+allM.map(m=>`<option${m===prev?' selected':''}>${m}</option>`).join('');
+  const fM=mSel.value;const fD=document.getElementById('sun-durum').value;
+  let rows=[];
+  data.magazalar.forEach(x=>{
+    (x.sunumlar||[]).forEach(s=>{
+      if(fM&&s.marka!==fM)return;
+      if(fD&&s.durum!==fD)return;
+      rows.push({magaza:x.ad,sehir:x.sehir,hava:x.hava,marka:s.marka,tarih:s.tarih,durum:s.durum,not:s.not,mid:x.id,sid:s.id});
+    });
+  });
+  const tbody=document.getElementById('sunum-tbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">Sunum bulunamadı</div></td></tr>';return}
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td style="font-weight:500">${r.magaza}</td>
+      <td>${r.sehir}</td>
+      <td>${r.hava&&Number(r.hava)>0?`<span class="hava-tag">${Number(r.hava).toLocaleString('tr-TR')}₺</span>`:'-'}</td>
+      <td>${r.marka}</td>
+      <td style="font-size:12px">${r.tarih||'-'}</td>
+      <td><select style="font-size:12px;padding:5px 8px" onchange="sunumGuncelle('${r.mid}','${r.sid}',this.value)">
+        ${['Bekliyor','Sunuldu','Olumlu','Olumsuz','Kiralandı'].map(d=>`<option${r.durum===d?' selected':''}>${d}</option>`).join('')}
+      </select></td>
+      <td style="font-size:12px;color:#888">${r.not||'-'}</td>
+    </tr>
+  `).join('');
+}
+
+
+// Excel import verisi
+const EXCEL_IMPORT = {"magazalar": [{"id": "m1782125466997", "ad": "Çizgi", "sehir": "Adana", "cadde": "İnönü Blv.", "iletisim": "", "m2": "170", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125541423", "marka": "Taç-Linens", "durum": "Sunuldu", "tarih": "2025-03-05", "not": "Sunuldu."}], "tarih": 1782125466997}, {"id": "m1782125466998", "ad": "Çerçi Hediyelik", "sehir": "Ağrı", "cadde": "Cumhuriyet Cad.", "iletisim": "", "m2": "35", "kira": "140000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125494272", "marka": "Tudors", "durum": "Sunuldu", "tarih": "2026-04-08", "not": ""}, {"id": "sr1782125494734", "marka": "Amasya Et & Subway", "durum": "Olumsuz", "tarih": "2026-04-08", "not": ""}], "tarih": 1782125465997}, {"id": "m1782125466999", "ad": "Boş", "sehir": "Ankara", "cadde": "Necatibey Cd.", "iletisim": "", "m2": "256", "kira": "500000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125565043", "marka": "Taç-Linens", "durum": "Sunuldu", "tarih": "2026-04-15", "not": "Sunuldu."}, {"id": "sr1782125511977", "marka": "Özdilek", "durum": "Sunuldu", "tarih": "2026-04-15", "not": "Sunuldu."}, {"id": "sr1782125507882", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-04-15", "not": "Sunuldu."}, {"id": "sr1782125532027", "marka": "Nivogo", "durum": "Sunuldu", "tarih": "2026-04-15", "not": "Sunuldu."}], "tarih": 1782125464997}, {"id": "m1782125467000", "ad": "Ertuğrul Kardeşler", "sehir": "Ankara", "cadde": "Turan Güneş Blv.", "iletisim": "", "m2": "125", "kira": "100000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125542114", "marka": "Mion", "durum": "Sunuldu", "tarih": "2025-04-09", "not": "Sunuldu."}, {"id": "sr1782125477354", "marka": "Penti", "durum": "Sunuldu", "tarih": "2025-04-09", "not": "Sunuldu."}], "tarih": 1782125463997}, {"id": "m1782125467001", "ad": "Arsızz", "sehir": "Aydın", "cadde": "Altınkum", "iletisim": "", "m2": "300", "kira": "3500000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125542461", "marka": "Alaçatı Muhallebicisi", "durum": "Sunuldu", "tarih": "2025-03-14", "not": ""}, {"id": "sr1782125515016", "marka": "Starbucks", "durum": "Olumsuz", "tarih": "2025-03-14", "not": ""}, {"id": "sr1782125482658", "marka": "Kronotrop", "durum": "Sunuldu", "tarih": "2025-04-25", "not": ""}, {"id": "sr1782125536819", "marka": "Caffe Nero", "durum": "Olumsuz", "tarih": "2025-04-25", "not": ""}, {"id": "sr1782125557979", "marka": "Magnolia Shop", "durum": "Sunuldu", "tarih": "2025-12-30", "not": ""}, {"id": "sr1782125524515", "marka": "Nevada Coffee", "durum": "Sunuldu", "tarih": "2026-01-22", "not": ""}], "tarih": 1782125462997}, {"id": "m1782125467002", "ad": "Yargıcı", "sehir": "Balıkesir", "cadde": "Atatürk Blv.", "iletisim": "", "m2": "80", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125467712", "marka": "Özdilek", "durum": "Olumsuz", "tarih": "2026-04-21", "not": "Sunuldu"}, {"id": "sr1782125477325", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-05-06", "not": "Sunuldu"}], "tarih": 1782125461997}, {"id": "m1782125467003", "ad": "Depomaxx", "sehir": "Balıkesir", "cadde": "Gümrük Cad.", "iletisim": "", "m2": "40", "kira": "150000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125520827", "marka": "Pizza Lazza", "durum": "Sunuldu", "tarih": "2026-02-23", "not": "Sunuldu."}, {"id": "sr1782125489685", "marka": "Little Ceasars Pizza", "durum": "Sunuldu", "tarih": "2026-02-23", "not": "Sunuldu."}, {"id": "sr1782125511841", "marka": "Coffy-Dominos", "durum": "Sunuldu", "tarih": "2026-02-23", "not": "Sunuldu."}], "tarih": 1782125460997}, {"id": "m1782125467004", "ad": "Ömür Otel", "sehir": "Balıkesir", "cadde": "Cumhuriyet Blv.", "iletisim": "", "m2": "147", "kira": "270000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125507892", "marka": "Luuq Coffee", "durum": "Sunuldu", "tarih": "2025-12-10", "not": "Sunuldu."}, {"id": "sr1782125473778", "marka": "The Coffee Factory", "durum": "Sunuldu", "tarih": "2025-12-10", "not": "Sunuldu."}, {"id": "sr1782125521432", "marka": "Nevada Coffee", "durum": "Sunuldu", "tarih": "2026-01-22", "not": "Sunuldu."}], "tarih": 1782125459997}, {"id": "m1782125467005", "ad": "Easycep", "sehir": "Bartın", "cadde": "Hükümet Cad.", "iletisim": "", "m2": "35", "kira": "140000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125483604", "marka": "Amasya Et & Subway", "durum": "Olumsuz", "tarih": "2026-04-08", "not": ""}], "tarih": 1782125458997}, {"id": "m1782125467006", "ad": "Boş", "sehir": "Batman", "cadde": "Demokrasi Bulvarı", "iletisim": "", "m2": "325", "kira": "800000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125526482", "marka": "Defacto", "durum": "Olumsuz", "tarih": "2026-05-18", "not": "Sunuldu"}, {"id": "sr1782125526006", "marka": "Mavi", "durum": "Sunuldu", "tarih": "2026-05-20", "not": "Sunuldu"}], "tarih": 1782125457997}, {"id": "m1782125467007", "ad": "Eski Akbank", "sehir": "Batman", "cadde": "Eflatun Cd.", "iletisim": "", "m2": "190", "kira": "300000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125491037", "marka": "Mc Donald's", "durum": "Sunuldu", "tarih": "2026-04-03", "not": "Sunuldu"}, {"id": "sr1782125470785", "marka": "Burger King", "durum": "Sunuldu", "tarih": "2026-04-03", "not": "Sunuldu"}, {"id": "sr1782125545085", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125564336", "marka": "Setrms", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125542173", "marka": "Taç-Linens", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125524716", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125502157", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125520030", "marka": "Cajun Corner", "durum": "Olumsuz", "tarih": "2026-05-08", "not": "Sunuldu"}, {"id": "sr1782125542594", "marka": "Watsons", "durum": "Olumsuz", "tarih": "2026-05-08", "not": "Sunuldu"}], "tarih": 1782125456997}, {"id": "m1782125467008", "ad": "Kurşunlu Kahve", "sehir": "Eskişehir", "cadde": "Kurşunlu Cad.", "iletisim": "", "m2": "500", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125547026", "marka": "Kahve Dünyası", "durum": "Sunuldu", "tarih": "2025-07-25", "not": "Sunuldu."}], "tarih": 1782125455997}, {"id": "m1782125467009", "ad": "Karaca", "sehir": "Giresun", "cadde": "Gazi Cad.", "iletisim": "", "m2": "85", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125469722", "marka": "Greyder", "durum": "Sunuldu", "tarih": "2025-03-21", "not": "Sunuldu."}, {"id": "sr1782125512787", "marka": "Ramsey", "durum": "Sunuldu", "tarih": "2025-03-21", "not": "Sunuldu."}, {"id": "sr1782125522561", "marka": "Loya", "durum": "Olumsuz", "tarih": "2025-03-21", "not": "Sunuldu."}], "tarih": 1782125454997}, {"id": "m1782125467010", "ad": "Bad Bear Lee", "sehir": "Hatay", "cadde": "Çaylı Cad.", "iletisim": "", "m2": "245", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125545292", "marka": "Setrms", "durum": "Sunuldu", "tarih": "2026-04-08", "not": "Sunuldu."}, {"id": "sr1782125527385", "marka": "Armine", "durum": "Sunuldu", "tarih": "2026-04-08", "not": "Sunuldu."}], "tarih": 1782125453997}, {"id": "m1782125467011", "ad": "Boş", "sehir": "Hatay", "cadde": "Çaylı Cad.", "iletisim": "", "m2": "91", "kira": "2500000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125480569", "marka": "Tudors", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}], "tarih": 1782125452997}, {"id": "m1782125467012", "ad": "Boş", "sehir": "Hatay", "cadde": "Çaylı Cad.", "iletisim": "", "m2": "", "kira": "3500000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125536230", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-01-27", "not": "Sunuldu."}], "tarih": 1782125451997}, {"id": "m1782125467013", "ad": "Boş", "sehir": "İstanbul", "cadde": "Ispartakule/Bizimevler 6 Çarşı", "iletisim": "", "m2": "250", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125528996", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125502291", "marka": "Coffy-Dominos", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125518559", "marka": "Linens", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125508482", "marka": "Cajun Corner", "durum": "Olumsuz", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125560413", "marka": "English Home", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125493144", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125539307", "marka": "KFC", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125526568", "marka": "Rossmann", "durum": "Olumsuz", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125542697", "marka": "Magnolia Shop", "durum": "Sunuldu", "tarih": "2026-06-04", "not": "Sunuldu"}, {"id": "sr1782125493388", "marka": "Pawco", "durum": "Sunuldu", "tarih": "2026-06-10", "not": "Sunuldu"}, {"id": "sr1782125467230", "marka": "Cups & Clouds", "durum": "Sunuldu", "tarih": "2026-06-10", "not": "Sunuldu"}], "tarih": 1782125450997}, {"id": "m1782125467014", "ad": "Vayro", "sehir": "İstanbul", "cadde": "Marmara Cad.", "iletisim": "", "m2": "340", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125561347", "marka": "Perotti", "durum": "Sunuldu", "tarih": "2025-05-08", "not": "Sunuldu."}, {"id": "sr1782125471754", "marka": "Avva", "durum": "Olumsuz", "tarih": "2025-05-09", "not": "Sunuldu."}, {"id": "sr1782125518895", "marka": "Taç-Linens", "durum": "Olumsuz", "tarih": "2025-05-09", "not": "Sunuldu."}, {"id": "sr1782125525104", "marka": "BTM", "durum": "Sunuldu", "tarih": "2025-05-12", "not": "Sunuldu."}, {"id": "sr1782125509301", "marka": "Nivogo", "durum": "Olumsuz", "tarih": "2026-06-12", "not": "Sunuldu"}, {"id": "sr1782125507994", "marka": "Mr.Dıy", "durum": "Olumsuz", "tarih": "2026-06-12", "not": "Sunuldu"}], "tarih": 1782125449997}, {"id": "m1782125467015", "ad": "Boş", "sehir": "İstanbul", "cadde": "Bağcılar Cad.", "iletisim": "", "m2": "200", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125546863", "marka": "Vivense", "durum": "Sunuldu", "tarih": "2026-02-02", "not": "Sunuldu."}, {"id": "sr1782125559483", "marka": "Rossmann", "durum": "Olumsuz", "tarih": "2026-02-02", "not": "Sunuldu."}, {"id": "sr1782125496868", "marka": "Mion", "durum": "Olumsuz", "tarih": "2026-02-02", "not": "Sunuldu."}, {"id": "sr1782125514978", "marka": "Bonveno", "durum": "Sunuldu", "tarih": "2026-02-02", "not": "Sunuldu."}, {"id": "sr1782125489805", "marka": "Soley", "durum": "Sunuldu", "tarih": "2026-02-04", "not": "Sunuldu."}, {"id": "sr1782125559062", "marka": "Watsons", "durum": "Sunuldu", "tarih": "2026-02-04", "not": "Sunuldu."}, {"id": "sr1782125514911", "marka": "Setrms", "durum": "Sunuldu", "tarih": "2026-04-22", "not": "Sunuldu."}, {"id": "sr1782125504117", "marka": "English Home", "durum": "Olumsuz", "tarih": "2026-04-22", "not": "Sunuldu."}], "tarih": 1782125448997}, {"id": "m1782125467016", "ad": "La Florist Patisserie", "sehir": "İstanbul", "cadde": "Yeşivadi Cad./Metrokent", "iletisim": "", "m2": "125", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125561937", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}, {"id": "sr1782125537711", "marka": "Doyuyo", "durum": "Sunuldu", "tarih": "2026-05-22", "not": "Sunuldu"}], "tarih": 1782125447997}, {"id": "m1782125467017", "ad": "Boş", "sehir": "İstanbul", "cadde": "Demirkapı Cd.", "iletisim": "", "m2": "150", "kira": "130000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125558441", "marka": "Penti", "durum": "Sunuldu", "tarih": "2026-04-09", "not": "Sunuldu."}], "tarih": 1782125446997}, {"id": "m1782125467018", "ad": "Sezgin Accessories", "sehir": "İstanbul", "cadde": "Demirkapı Cd.", "iletisim": "", "m2": "20", "kira": "130000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125494308", "marka": "Yves Rocher", "durum": "Sunuldu", "tarih": "2026-04-09", "not": "Sunuldu."}], "tarih": 1782125445997}, {"id": "m1782125467019", "ad": "Masqe Accessories", "sehir": "İstanbul", "cadde": "Barbaros Blv.", "iletisim": "", "m2": "21", "kira": "230000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125565076", "marka": "Yves Rocher", "durum": "Olumsuz", "tarih": "2025-11-18", "not": "Sunuldu."}, {"id": "sr1782125490151", "marka": "Aja Jewels", "durum": "Olumsuz", "tarih": "2025-12-02", "not": "Sunuldu."}], "tarih": 1782125444997}, {"id": "m1782125467020", "ad": "Boş", "sehir": "İstanbul", "cadde": "Ortabahçe Cd.", "iletisim": "", "m2": "17", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125501746", "marka": "İceberry", "durum": "Sunuldu", "tarih": "2026-06-13", "not": "Sunuldu."}, {"id": "sr1782125562763", "marka": "LMD Tacos", "durum": "Olumsuz", "tarih": "2026-06-13", "not": "Sunuldu."}, {"id": "sr1782125537947", "marka": "Springfield", "durum": "Sunuldu", "tarih": "2026-06-13", "not": "Sunuldu."}, {"id": "sr1782125527982", "marka": "Çaytaze", "durum": "Sunuldu", "tarih": "2026-06-13", "not": "Sunuldu."}], "tarih": 1782125443997}, {"id": "m1782125467021", "ad": "Boş", "sehir": "İstanbul", "cadde": "Cumhuriyet Cad.", "iletisim": "", "m2": "60", "kira": "200000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125555057", "marka": "Juan Valdez", "durum": "Sunuldu", "tarih": "2025-05-05", "not": "Sunuldu."}, {"id": "sr1782125546521", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2025-05-05", "not": "Sunuldu."}, {"id": "sr1782125562768", "marka": "Deli2Go", "durum": "Olumsuz", "tarih": "2025-05-06", "not": "Sunuldu."}, {"id": "sr1782125504451", "marka": "Carl's Jr.", "durum": "Olumsuz", "tarih": "2025-05-06", "not": "Sunuldu."}, {"id": "sr1782125559677", "marka": "Tavuk Dünyası", "durum": "Olumsuz", "tarih": "2025-05-06", "not": "Sunuldu."}, {"id": "sr1782125474219", "marka": "Saloon Burger", "durum": "Olumsuz", "tarih": "2025-05-06", "not": "Sunuldu."}, {"id": "sr1782125565455", "marka": "Bay Döner", "durum": "Sunuldu", "tarih": "2025-05-09", "not": "Sunuldu."}, {"id": "sr1782125506975", "marka": "Kasap Döner", "durum": "Olumsuz", "tarih": "2025-05-09", "not": "Sunuldu."}, {"id": "sr1782125490489", "marka": "Yaprak Dönercisi", "durum": "Olumsuz", "tarih": "2025-05-30", "not": "Sunuldu."}, {"id": "sr1782125507969", "marka": "Musluoğlu-Dilim Börek", "durum": "Olumsuz", "tarih": "2025-08-18", "not": "Sunuldu."}, {"id": "sr1782125498754", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2026-01-05", "not": "Sunuldu."}, {"id": "sr1782125553503", "marka": "Puufu", "durum": "Olumsuz", "tarih": "2026-03-12", "not": "Sunuldu."}, {"id": "sr1782125480102", "marka": "İceberry", "durum": "Sunuldu", "tarih": "2026-03-13", "not": "Sunuldu."}, {"id": "sr1782125544009", "marka": "Çaytaze", "durum": "Sunuldu", "tarih": "2026-03-18", "not": "Sunuldu."}, {"id": "sr1782125531325", "marka": "LMD Tacos", "durum": "Sunuldu", "tarih": "2026-03-27", "not": "Sunuldu."}, {"id": "sr1782125471220", "marka": "Springfield", "durum": "Sunuldu", "tarih": "2026-04-17", "not": "Sunuldu."}], "tarih": 1782125442997}, {"id": "m1782125467022", "ad": "Boş", "sehir": "İstanbul", "cadde": "Hürriyet Bulvarı", "iletisim": "", "m2": "150", "kira": "220000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125552572", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-01-08", "not": "Sunuldu."}, {"id": "sr1782125491648", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-01-08", "not": "Sunuldu."}, {"id": "sr1782125473877", "marka": "Kasap Döner", "durum": "Olumsuz", "tarih": "2026-01-08", "not": "Sunuldu."}], "tarih": 1782125441997}, {"id": "m1782125467023", "ad": "Osmanlı Oud", "sehir": "İstanbul", "cadde": "İstiklal Cad.", "iletisim": "", "m2": "33", "kira": "1300000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125546929", "marka": "Girl Stop", "durum": "Olumsuz", "tarih": "2026-04-08", "not": ""}], "tarih": 1782125440997}, {"id": "m1782125467024", "ad": "Teknoloji Team", "sehir": "İstanbul", "cadde": "Şahinbey Cad.", "iletisim": "", "m2": "29", "kira": "", "hava": "", "sektor": "", "not": "Yeni kira 60-70 k civarında olması bekleniyor.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125486523", "marka": "Küppeli", "durum": "Sunuldu", "tarih": "2025-08-12", "not": "Yeni kira 60-70 k civarında olması bekleniyor."}], "tarih": 1782125439997}, {"id": "m1782125467025", "ad": "FBI Giyim", "sehir": "İstanbul", "cadde": "Davutpaşa Cad.", "iletisim": "", "m2": "20", "kira": "80000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125538406", "marka": "Mad Parfüm", "durum": "Sunuldu", "tarih": "2025-09-05", "not": "Sunuldu."}], "tarih": 1782125438997}, {"id": "m1782125467026", "ad": "The Accessories", "sehir": "İstanbul", "cadde": "Davutpaşa Cad.", "iletisim": "", "m2": "70", "kira": "150000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125529448", "marka": "Musluoğlu-Dilim Börek", "durum": "Olumsuz", "tarih": "2025-09-03", "not": "Sunuldu."}], "tarih": 1782125437997}, {"id": "m1782125467027", "ad": "Bambi Yatak", "sehir": "İstanbul", "cadde": "Doğan Araslı Blv.", "iletisim": "", "m2": "160", "kira": "280000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125511197", "marka": "Musluoğlu-Dilim Börek", "durum": "Olumsuz", "tarih": "2025-08-27", "not": ""}], "tarih": 1782125436997}, {"id": "m1782125467028", "ad": "Halıcı Ayhan", "sehir": "İstanbul", "cadde": "Doğan Araslı Blv.", "iletisim": "", "m2": "120", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125498753", "marka": "Setrms", "durum": "Sunuldu", "tarih": "2026-02-12", "not": "Sunuldu."}, {"id": "sr1782125501094", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2026-02-20", "not": "Sunuldu."}, {"id": "sr1782125539633", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-02-20", "not": "Sunuldu."}, {"id": "sr1782125528150", "marka": "Tudors", "durum": "Sunuldu", "tarih": "2026-02-20", "not": "Sunuldu."}, {"id": "sr1782125494675", "marka": "Mion", "durum": "Olumsuz", "tarih": "2026-02-20", "not": "Sunuldu."}], "tarih": 1782125435997}, {"id": "m1782125467029", "ad": "Boş", "sehir": "İstanbul", "cadde": "Belediye Cad. (Kemer Life)", "iletisim": "", "m2": "150", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125552811", "marka": "Vitruta", "durum": "Olumsuz", "tarih": "2025-09-05", "not": "Sunuldu."}], "tarih": 1782125434997}, {"id": "m1782125467030", "ad": "Carl's Jr.", "sehir": "İstanbul", "cadde": "İstanbul Cad.", "iletisim": "", "m2": "170", "kira": "", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125502808", "marka": "Magnolia Shop", "durum": "Sunuldu", "tarih": "2025-12-30", "not": ""}], "tarih": 1782125433997}, {"id": "m1782125467031", "ad": "Panista", "sehir": "İstanbul", "cadde": "İstanbul Cad.", "iletisim": "", "m2": "85", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125544506", "marka": "Aja Yewels", "durum": "Sunuldu", "tarih": "2026-06-17", "not": "Sunuldu."}, {"id": "sr1782125534688", "marka": "Cajun Corner", "durum": "Sunuldu", "tarih": "2026-06-17", "not": "Sunuldu."}, {"id": "sr1782125532087", "marka": "Vitruta", "durum": "Sunuldu", "tarih": "2026-06-17", "not": "Sunuldu."}], "tarih": 1782125432997}, {"id": "m1782125467032", "ad": "Larus", "sehir": "İstanbul", "cadde": "Kayın Sok.", "iletisim": "", "m2": "160", "kira": "700000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125540430", "marka": "Vitruta", "durum": "Olumsuz", "tarih": "2025-09-05", "not": "Sunuldu."}, {"id": "sr1782125545622", "marka": "Aja", "durum": "Olumsuz", "tarih": "2026-03-04", "not": "Sunuldu."}], "tarih": 1782125431997}, {"id": "m1782125467033", "ad": "Doner's", "sehir": "İstanbul", "cadde": "Bağlarbaşı Cad.", "iletisim": "", "m2": "40", "kira": "150000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125482331", "marka": "Mad Parfume", "durum": "Sunuldu", "tarih": "2026-05-08", "not": "Sunuldu."}], "tarih": 1782125430997}, {"id": "m1782125467034", "ad": "Dewa Coffee", "sehir": "İstanbul", "cadde": "Halitağa Cad.", "iletisim": "", "m2": "145", "kira": "200000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125469199", "marka": "Cajun Corner", "durum": "Olumsuz", "tarih": "2026-06-01", "not": "Sunuldu."}, {"id": "sr1782125479838", "marka": "Plus Kitchen", "durum": "Sunuldu", "tarih": "2026-06-17", "not": "Sunuldu."}], "tarih": 1782125429997}, {"id": "m1782125467035", "ad": "Miele", "sehir": "İstanbul", "cadde": "Bağdat Cad.", "iletisim": "", "m2": "100", "kira": "", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125477880", "marka": "Avva", "durum": "Sunuldu", "tarih": "2025-07-22", "not": ""}, {"id": "sr1782125480029", "marka": "Kom", "durum": "Olumsuz", "tarih": "2025-07-22", "not": ""}, {"id": "sr1782125487858", "marka": "Nefeli", "durum": "Olumsuz", "tarih": "2025-07-22", "not": ""}, {"id": "sr1782125532063", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2025-08-12", "not": ""}], "tarih": 1782125428997}, {"id": "m1782125467036", "ad": "Atasun", "sehir": "İstanbul", "cadde": "Doç. Dr.Bahriye Üçok Blv.", "iletisim": "", "m2": "131", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125510574", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-06-09", "not": "Sunuldu."}], "tarih": 1782125427997}, {"id": "m1782125467037", "ad": "İrfan Halı", "sehir": "İstanbul", "cadde": "Atatürk Cad.", "iletisim": "", "m2": "120", "kira": "140000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125489177", "marka": "Atasun", "durum": "Sunuldu", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125480446", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125501616", "marka": "Dürümle", "durum": "Sunuldu", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125542753", "marka": "Eve Shop", "durum": "Sunuldu", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125546025", "marka": "Mion", "durum": "Sunuldu", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125531641", "marka": "Amasya Et & Subway", "durum": "Olumsuz", "tarih": "2026-01-14", "not": "Sunuldu."}, {"id": "sr1782125493275", "marka": "Cajun Corner", "durum": "Olumsuz", "tarih": "2026-01-14", "not": "Sunuldu."}], "tarih": 1782125426997}, {"id": "m1782125467038", "ad": "Nox Kids", "sehir": "İstanbul", "cadde": "Bağdat Cad.", "iletisim": "", "m2": "120", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125520565", "marka": "Girlstop", "durum": "Olumsuz", "tarih": "2026-05-15", "not": "Sunuldu."}], "tarih": 1782125425997}, {"id": "m1782125467039", "ad": "Scorpion", "sehir": "İstanbul", "cadde": "Demokrasi Cd.", "iletisim": "", "m2": "110", "kira": "250000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125518262", "marka": "Mion", "durum": "Sunuldu", "tarih": "2026-02-11", "not": "Sunuldu."}, {"id": "sr1782125552339", "marka": "Cajun Corner", "durum": "Sunuldu", "tarih": "2026-02-11", "not": "Sunuldu."}, {"id": "sr1782125537314", "marka": "Amasya Et & Subway", "durum": "Sunuldu", "tarih": "2026-02-11", "not": "Sunuldu."}, {"id": "sr1782125529452", "marka": "Yves Rocher", "durum": "Olumsuz", "tarih": "2026-02-11", "not": "Sunuldu."}, {"id": "sr1782125498278", "marka": "Dagi", "durum": "Olumsuz", "tarih": "2026-02-11", "not": "Sunuldu."}], "tarih": 1782125424997}, {"id": "m1782125467040", "ad": "Boş", "sehir": "İstanbul", "cadde": "Elmadağ Cad.", "iletisim": "", "m2": "20", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125513805", "marka": "Aja Jewels", "durum": "Olumsuz", "tarih": "2026-02-18", "not": "Sunuldu."}], "tarih": 1782125423997}, {"id": "m1782125467041", "ad": "Boş", "sehir": "İstanbul", "cadde": "Ergenekon Cad.", "iletisim": "", "m2": "221", "kira": "1200000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125560286", "marka": "Gloria Jean's", "durum": "Olumsuz", "tarih": "2025-11-12", "not": "Sunuldu."}, {"id": "sr1782125535732", "marka": "Luuq Coffee", "durum": "Olumsuz", "tarih": "2025-11-12", "not": "Sunuldu."}], "tarih": 1782125422997}, {"id": "m1782125467042", "ad": "Eski Aras Kargo", "sehir": "İstanbul", "cadde": "Kurtuluş Cad.", "iletisim": "", "m2": "150", "kira": "18000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125477564", "marka": "Eve Shop", "durum": "Sunuldu", "tarih": "2026-01-23", "not": "Sunuldu."}, {"id": "sr1782125473761", "marka": "Amasya Et & Subway", "durum": "Olumsuz", "tarih": "2026-01-23", "not": "Sunuldu."}], "tarih": 1782125421997}, {"id": "m1782125467043", "ad": "Eski Yapı Kredi", "sehir": "İstanbul", "cadde": "Kurtuluş Cad.", "iletisim": "", "m2": "190", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125500483", "marka": "HD İskender", "durum": "Sunuldu", "tarih": "2026-01-23", "not": "Sunuldu."}], "tarih": 1782125420997}, {"id": "m1782125467044", "ad": "Boş", "sehir": "İstanbul", "cadde": "Cumhuriyet Cad.", "iletisim": "", "m2": "350", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125498375", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2025-08-12", "not": "Sunuldu."}, {"id": "sr1782125526219", "marka": "Rossmann", "durum": "Olumsuz", "tarih": "2025-08-12", "not": "Sunuldu."}, {"id": "sr1782125553126", "marka": "Mr.Dıy", "durum": "Olumsuz", "tarih": "2025-08-12", "not": "Sunuldu."}, {"id": "sr1782125562430", "marka": "Eve Shop", "durum": "Olumsuz", "tarih": "2025-08-12", "not": "Sunuldu."}], "tarih": 1782125419997}, {"id": "m1782125467045", "ad": "Mahal", "sehir": "İstanbul", "cadde": "Merkez Hayrettin Çvş. Sk.", "iletisim": "", "m2": "40", "kira": "70000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125509063", "marka": "Magnolia Shop", "durum": "Sunuldu", "tarih": "2026-01-20", "not": "Sunuldu."}, {"id": "sr1782125526807", "marka": "İkbal Döner & Sucuk", "durum": "Sunuldu", "tarih": "2026-01-20", "not": "Sunuldu."}, {"id": "sr1782125479340", "marka": "Coffy-Dominos", "durum": "Sunuldu", "tarih": "2026-01-20", "not": "Sunuldu."}], "tarih": 1782125418997}, {"id": "m1782125467046", "ad": "Boş", "sehir": "İstanbul", "cadde": "Eski Edirne Asfaltı", "iletisim": "", "m2": "135", "kira": "", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125470932", "marka": "HD İskender & KFC", "durum": "Sunuldu", "tarih": "2026-01-27", "not": ""}, {"id": "sr1782125526340", "marka": "Bonveno", "durum": "Sunuldu", "tarih": "2026-01-27", "not": ""}, {"id": "sr1782125537853", "marka": "Gratis", "durum": "Olumsuz", "tarih": "2026-01-27", "not": ""}, {"id": "sr1782125469285", "marka": "Mion", "durum": "Olumsuz", "tarih": "2026-01-27", "not": ""}, {"id": "sr1782125537196", "marka": "Watsons", "durum": "Olumsuz", "tarih": "2026-01-27", "not": ""}], "tarih": 1782125417997}, {"id": "m1782125467047", "ad": "Boş", "sehir": "İstanbul", "cadde": "58. Bulvar Cad.", "iletisim": "", "m2": "90", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125514015", "marka": "Tavada Tavuk", "durum": "Sunuldu", "tarih": "2026-03-13", "not": "Sunuldu"}, {"id": "sr1782125478843", "marka": "Kasap Döner", "durum": "Sunuldu", "tarih": "2026-03-13", "not": "Sunuldu"}, {"id": "sr1782125551135", "marka": "Cajun Corner", "durum": "Olumsuz", "tarih": "2026-03-13", "not": "Sunuldu"}, {"id": "sr1782125470346", "marka": "Saloon Burger", "durum": "Olumsuz", "tarih": "2026-03-13", "not": "Sunuldu"}], "tarih": 1782125416997}, {"id": "m1782125467048", "ad": "Enrico Coffee", "sehir": "İzmir", "cadde": "Ali Çetinkaya Cad.", "iletisim": "", "m2": "120", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125526318", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2026-04-07", "not": "Sunuldu."}], "tarih": 1782125415997}, {"id": "m1782125467049", "ad": "Apıko", "sehir": "İzmir", "cadde": "Atatürk Blv.", "iletisim": "", "m2": "90", "kira": "290000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125543523", "marka": "Oakberry", "durum": "Olumsuz", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125487498", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125527443", "marka": "Gloria Jean's", "durum": "Sunuldu", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125534556", "marka": "Nevada Coffee", "durum": "Sunuldu", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125502333", "marka": "Caffe Nero", "durum": "Sunuldu", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125489870", "marka": "Juan Valdez", "durum": "Sunuldu", "tarih": "2026-05-15", "not": "Sunuldu."}, {"id": "sr1782125490398", "marka": "Watsons", "durum": "Sunuldu", "tarih": "2026-06-10", "not": "Sunuldu."}], "tarih": 1782125414997}, {"id": "m1782125467050", "ad": "Kasaba", "sehir": "İzmir", "cadde": "Milli Kütüphaneler Cad.", "iletisim": "", "m2": "150", "kira": "200000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125519444", "marka": "Atasun", "durum": "Sunuldu", "tarih": "2025-07-23", "not": "Sunuldu."}, {"id": "sr1782125557019", "marka": "Suwen", "durum": "Sunuldu", "tarih": "2025-07-23", "not": "Sunuldu."}, {"id": "sr1782125540850", "marka": "Avva", "durum": "Sunuldu", "tarih": "2025-07-23", "not": "Sunuldu."}, {"id": "sr1782125521859", "marka": "Lee Cooper", "durum": "Sunuldu", "tarih": "2025-07-23", "not": "Sunuldu."}, {"id": "sr1782125553110", "marka": "Penti", "durum": "Olumsuz", "tarih": "2025-07-23", "not": "Sunuldu."}], "tarih": 1782125413997}, {"id": "m1782125467051", "ad": "İkaria", "sehir": "İzmir", "cadde": "Atatürk Cad.", "iletisim": "", "m2": "90", "kira": "100000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125531007", "marka": "Atasun", "durum": "Sunuldu", "tarih": "2025-07-24", "not": "Sunuldu."}, {"id": "sr1782125533724", "marka": "Penti", "durum": "Sunuldu", "tarih": "2025-07-24", "not": "Sunuldu."}, {"id": "sr1782125510473", "marka": "Yves Rocher", "durum": "Sunuldu", "tarih": "2026-01-27", "not": "Sunuldu."}, {"id": "sr1782125471875", "marka": "Mad Parfüm", "durum": "Olumsuz", "tarih": "2026-01-27", "not": "Sunuldu."}], "tarih": 1782125412997}, {"id": "m1782125467052", "ad": "İkaria", "sehir": "İzmir", "cadde": "İstasyon Cad.", "iletisim": "", "m2": "200", "kira": "80000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125558593", "marka": "Tudors", "durum": "Olumsuz", "tarih": "2025-07-23", "not": "Sunuldu."}], "tarih": 1782125411997}, {"id": "m1782125467053", "ad": "Seç-Al", "sehir": "Kocaeli", "cadde": "Hükümet Cad.", "iletisim": "", "m2": "120", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125471158", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2025-08-14", "not": "Sunuldu."}, {"id": "sr1782125492553", "marka": "Penti", "durum": "Sunuldu", "tarih": "2025-08-22", "not": "Sunuldu."}, {"id": "sr1782125552408", "marka": "Eve Shop", "durum": "Sunuldu", "tarih": "2025-08-22", "not": "Sunuldu."}, {"id": "sr1782125499937", "marka": "Dagi", "durum": "Olumsuz", "tarih": "2025-08-22", "not": "Sunuldu."}], "tarih": 1782125410997}, {"id": "m1782125467054", "ad": "İnşaat", "sehir": "Mardin", "cadde": "Cumhuriyet Blv.", "iletisim": "", "m2": "", "kira": "4000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125557949", "marka": "Tudors", "durum": "Sunuldu", "tarih": "2025-03-06", "not": "Sunuldu."}, {"id": "sr1782125499861", "marka": "Mr.Dıy", "durum": "Olumsuz", "tarih": "2025-03-06", "not": "Sunuldu."}, {"id": "sr1782125489300", "marka": "Türk Telekom", "durum": "Sunuldu", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125520292", "marka": "Bay Döner", "durum": "Sunuldu", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125484400", "marka": "Toyzz Shop", "durum": "Sunuldu", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125513245", "marka": "Süvari", "durum": "Sunuldu", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125515785", "marka": "Yves Rocher", "durum": "Sunuldu", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125513256", "marka": "Tavuk Dünyası", "durum": "Olumsuz", "tarih": "2025-07-08", "not": "Sunuldu."}, {"id": "sr1782125469433", "marka": "Kiğılı", "durum": "Olumsuz", "tarih": "2026-01-22", "not": "Sunuldu."}], "tarih": 1782125409997}, {"id": "m1782125467055", "ad": "Opel", "sehir": "Mersin", "cadde": "GMK Bul.", "iletisim": "", "m2": "296", "kira": "450000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125553285", "marka": "Tavuk Dünyası", "durum": "Olumsuz", "tarih": "2026-03-18", "not": "Sunuldu."}, {"id": "sr1782125503572", "marka": "Watsons", "durum": "Sunuldu", "tarih": "2026-03-22", "not": "Sunuldu."}, {"id": "sr1782125475439", "marka": "Zsa Zsa Zsu", "durum": "Olumsuz", "tarih": "2026-03-22", "not": "Sunuldu."}, {"id": "sr1782125469366", "marka": "Nivogo", "durum": "Sunuldu", "tarih": "2026-04-22", "not": "Sunuldu."}, {"id": "sr1782125516746", "marka": "Armine", "durum": "Sunuldu", "tarih": "2026-04-22", "not": "Sunuldu."}, {"id": "sr1782125562606", "marka": "Mavi", "durum": "Sunuldu", "tarih": "2026-05-20", "not": "Sunuldu."}], "tarih": 1782125408997}, {"id": "m1782125467056", "ad": "Peron", "sehir": "Mersin", "cadde": "Cengiz Topel Cad.", "iletisim": "", "m2": "170", "kira": "600000", "hava": "", "sektor": "", "not": "", "durum": "Aktif", "sunumlar": [{"id": "sr1782125560562", "marka": "Mavi", "durum": "Olumsuz", "tarih": "2025-08-28", "not": ""}, {"id": "sr1782125523179", "marka": "Vayro", "durum": "Olumsuz", "tarih": "2025-08-28", "not": ""}, {"id": "sr1782125467359", "marka": "Kiğılı", "durum": "Sunuldu", "tarih": "2026-06-13", "not": "Sunuldu."}], "tarih": 1782125407997}, {"id": "m1782125467057", "ad": "Boş", "sehir": "Mersin", "cadde": "Atatürk Cad.", "iletisim": "", "m2": "30", "kira": "1200000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125554695", "marka": "Tudors", "durum": "Olumsuz", "tarih": "2026-04-10", "not": "Sunuldu"}], "tarih": 1782125406997}, {"id": "m1782125467058", "ad": "Neo", "sehir": "Mersin", "cadde": "Hüseyin Okan Merzeci Blv.", "iletisim": "", "m2": "", "kira": "", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125477854", "marka": "Amasya Et & Subway", "durum": "Sunuldu", "tarih": "2025-02-13", "not": "Sunuldu."}, {"id": "sr1782125552446", "marka": "Madame Coco", "durum": "Olumsuz", "tarih": "2025-03-07", "not": "Sunuldu."}, {"id": "sr1782125474351", "marka": "Mr.Dıy", "durum": "Sunuldu", "tarih": "2025-03-07", "not": "Sunuldu."}, {"id": "sr1782125523286", "marka": "Civil", "durum": "Sunuldu", "tarih": "2025-03-11", "not": "Sunuldu."}, {"id": "sr1782125557858", "marka": "Rossmann", "durum": "Sunuldu", "tarih": "2025-03-11", "not": "Sunuldu."}, {"id": "sr1782125529898", "marka": "Espresso Lab", "durum": "Sunuldu", "tarih": "2025-03-11", "not": "Sunuldu."}, {"id": "sr1782125545301", "marka": "E-Bebek", "durum": "Olumsuz", "tarih": "2025-03-11", "not": "Sunuldu."}, {"id": "sr1782125517442", "marka": "Coffy-Dominos", "durum": "Sunuldu", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125534858", "marka": "Vestel", "durum": "Sunuldu", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125554741", "marka": "Watsons", "durum": "Sunuldu", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125467537", "marka": "Taç-Linens", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125505605", "marka": "Migros", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125476879", "marka": "English Home", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125513352", "marka": "Zincir", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125533671", "marka": "Mavi", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125474602", "marka": "Mc Donald's", "durum": "Olumsuz", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125561870", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125538666", "marka": "Gloria Jean's", "durum": "Sunuldu", "tarih": "2025-04-25", "not": "Sunuldu."}, {"id": "sr1782125494397", "marka": "Zühre", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125505738", "marka": "Bay Döner", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125553873", "marka": "Moda Nisa", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125503961", "marka": "Yataş", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125511825", "marka": "Armine", "durum": "Olumsuz", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125475083", "marka": "Saloon Burger", "durum": "Olumsuz", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125534165", "marka": "Paul Mark", "durum": "Olumsuz", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125478971", "marka": "Defacto", "durum": "Olumsuz", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125481044", "marka": "Toyzz Shop", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125539595", "marka": "Starbucks", "durum": "Sunuldu", "tarih": "2025-04-30", "not": "Sunuldu."}, {"id": "sr1782125538515", "marka": "Armağan Oyuncak", "durum": "Sunuldu", "tarih": "2025-05-05", "not": "Sunuldu."}, {"id": "sr1782125542113", "marka": "Zsa Zsa Zsu", "durum": "Olumsuz", "tarih": "2025-05-08", "not": "Sunuldu."}, {"id": "sr1782125505024", "marka": "Vayro", "durum": "Olumsuz", "tarih": "2025-05-08", "not": "Sunuldu."}, {"id": "sr1782125532606", "marka": "En Plus", "durum": "Sunuldu", "tarih": "2025-05-12", "not": "Sunuldu."}, {"id": "sr1782125530978", "marka": "Kahve Dünyası", "durum": "Olumsuz", "tarih": "2025-05-15", "not": "Sunuldu."}, {"id": "sr1782125515740", "marka": "Vivense", "durum": "Olumsuz", "tarih": "2025-05-15", "not": "Sunuldu."}, {"id": "sr1782125540113", "marka": "Caffe Nero", "durum": "Olumsuz", "tarih": "2025-06-02", "not": "Sunuldu."}, {"id": "sr1782125470339", "marka": "Carrefour", "durum": "Sunuldu", "tarih": "2025-07-11", "not": "Sunuldu."}, {"id": "sr1782125505604", "marka": "Luuq Coffee", "durum": "Sunuldu", "tarih": "2025-07-30", "not": "Sunuldu."}, {"id": "sr1782125530264", "marka": "Dospresso", "durum": "Sunuldu", "tarih": "2025-10-31", "not": "Sunuldu."}, {"id": "sr1782125545194", "marka": "Dagi", "durum": "Olumsuz", "tarih": "2025-10-31", "not": "Sunuldu."}, {"id": "sr1782125489734", "marka": "Nivogo", "durum": "Olumsuz", "tarih": "2025-10-31", "not": "Sunuldu."}, {"id": "sr1782125523944", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2025-10-31", "not": "Sunuldu."}, {"id": "sr1782125559607", "marka": "Miele", "durum": "Olumsuz", "tarih": "2025-11-10", "not": "Sunuldu."}, {"id": "sr1782125482125", "marka": "HD İskender", "durum": "Sunuldu", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125541803", "marka": "Caribou Coffee", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125523171", "marka": "Gallery Crystal", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125494446", "marka": "Alaçatı Muhallebicisi", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125524431", "marka": "Sushico", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125470273", "marka": "Magnolia Shop", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125479749", "marka": "Tavada Tavuk", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125565720", "marka": "Tab Gıda", "durum": "Sunuldu", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125475993", "marka": "Ms Warpoint", "durum": "Olumsuz", "tarih": "2026-04-07", "not": "Sunuldu."}, {"id": "sr1782125558464", "marka": "Penguen", "durum": "Sunuldu", "tarih": "2025-10-23", "not": "Sunuldu."}, {"id": "sr1782125480556", "marka": "Perotti", "durum": "Olumsuz", "tarih": "2025-11-28", "not": "Sunuldu."}, {"id": "sr1782125526105", "marka": "Soulmate", "durum": "Sunuldu", "tarih": "2026-03-13", "not": "Sunuldu."}, {"id": "sr1782125491201", "marka": "Kronotrop", "durum": "Sunuldu", "tarih": "2026-03-13", "not": "Sunuldu."}, {"id": "sr1782125536398", "marka": "The Coffee Factory", "durum": "Sunuldu", "tarih": "2026-06-04", "not": "Sunuldu."}], "tarih": 1782125405997}, {"id": "m1782125467059", "ad": "Taç", "sehir": "Muğla", "cadde": "Cumhuriyet/Paspatur Çarşısı", "iletisim": "", "m2": "250", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125484731", "marka": "Altınbaş", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125492231", "marka": "Nivo", "durum": "Olumsuz", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125505080", "marka": "Penti", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125541166", "marka": "Doyuyo", "durum": "Olumsuz", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125564892", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125562937", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125521180", "marka": "Nevada Coffee", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125520864", "marka": "Gloria Jean's", "durum": "Olumsuz", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125476438", "marka": "Avva", "durum": "Olumsuz", "tarih": "2026-05-04", "not": "Sunuldu."}, {"id": "sr1782125541615", "marka": "Mr.Dıy", "durum": "Sunuldu", "tarih": "2026-05-04", "not": "Sunuldu."}], "tarih": 1782125404997}, {"id": "m1782125467060", "ad": "Gözde Kuruyemiş", "sehir": "Ordu", "cadde": "Zübeyde Hanım Cad.", "iletisim": "", "m2": "70", "kira": "", "hava": "", "sektor": "", "not": "İlk yıl peşin talep ediyor", "durum": "Aktif", "sunumlar": [{"id": "sr1782125499585", "marka": "Türk Telekom", "durum": "Sunuldu", "tarih": "2026-01-30", "not": "İlk yıl peşin talep ediyor"}, {"id": "sr1782125470297", "marka": "Atasun", "durum": "Sunuldu", "tarih": "2026-01-30", "not": "İlk yıl peşin talep ediyor"}], "tarih": 1782125403997}, {"id": "m1782125467061", "ad": "Flo", "sehir": "Osmaniye", "cadde": "Palalı Süleyman Cad.", "iletisim": "", "m2": "258", "kira": "500000", "hava": "", "sektor": "", "not": "Sunuldu", "durum": "Aktif", "sunumlar": [{"id": "sr1782125487731", "marka": "Paul Mark", "durum": "Sunuldu", "tarih": "2026-02-02", "not": "Sunuldu"}], "tarih": 1782125402997}, {"id": "m1782125467062", "ad": "Hakke", "sehir": "Şanlıurfa", "cadde": "101. Sokak", "iletisim": "", "m2": "160", "kira": "100000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125489951", "marka": "Gratis", "durum": "Sunuldu", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125504332", "marka": "English Home", "durum": "Sunuldu", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125513625", "marka": "Penti", "durum": "Sunuldu", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125541602", "marka": "Tavuk Dünyası", "durum": "Sunuldu", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125515759", "marka": "Dürümle", "durum": "Olumsuz", "tarih": "2025-11-13", "not": "Sunuldu."}, {"id": "sr1782125548176", "marka": "Armine", "durum": "Olumsuz", "tarih": "2025-11-13", "not": "Sunuldu."}], "tarih": 1782125401997}, {"id": "m1782125467063", "ad": "Özsüt", "sehir": "Tekirdağ", "cadde": "Salih Omurtak Cad.", "iletisim": "", "m2": "250", "kira": "350000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125545039", "marka": "Kahve Dünyası", "durum": "Sunuldu", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125481269", "marka": "Juan Valdez", "durum": "Sunuldu", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125513679", "marka": "Kronotrop", "durum": "Olumsuz", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125556087", "marka": "Tavuk Dünyası", "durum": "Olumsuz", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125527301", "marka": "Alaçatı Muhallebicisi", "durum": "Olumsuz", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125520398", "marka": "Taç-Linens", "durum": "Olumsuz", "tarih": "2025-01-21", "not": "Sunuldu."}, {"id": "sr1782125548311", "marka": "Gallery Crystal", "durum": "Sunuldu", "tarih": "2025-05-26", "not": "Sunuldu."}], "tarih": 1782125400997}, {"id": "m1782125467064", "ad": "Koçtaş", "sehir": "Trabzon", "cadde": "Vardallar Plaza", "iletisim": "", "m2": "270", "kira": "400000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125528432", "marka": "Vivense", "durum": "Olumsuz", "tarih": "2025-01-12", "not": "Sunuldu."}], "tarih": 1782125399997}, {"id": "m1782125467065", "ad": "Kems", "sehir": "Urfa", "cadde": "Atatürk Blv.", "iletisim": "", "m2": "146", "kira": "280000", "hava": "", "sektor": "", "not": "Sunuldu.", "durum": "Aktif", "sunumlar": [{"id": "sr1782125529625", "marka": "Armine", "durum": "Olumsuz", "tarih": "2026-03-24", "not": "Sunuldu."}], "tarih": 1782125398997}], "markalar": [{"id": "mk1782125466997", "ad": "Aja", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125466998", "ad": "Aja Jewels", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125466999", "ad": "Aja Yewels", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467000", "ad": "Alaçatı Muhallebicisi", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467001", "ad": "Altınbaş", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467002", "ad": "Amasya Et & Subway", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467003", "ad": "Armağan Oyuncak", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467004", "ad": "Armine", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467005", "ad": "Atasun", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467006", "ad": "Avva", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467007", "ad": "BTM", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467008", "ad": "Bay Döner", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467009", "ad": "Bonveno", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467010", "ad": "Burger King", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467011", "ad": "Caffe Nero", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467012", "ad": "Cajun Corner", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467013", "ad": "Caribou Coffee", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467014", "ad": "Carl's Jr.", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467015", "ad": "Carrefour", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467016", "ad": "Civil", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467017", "ad": "Coffy-Dominos", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467018", "ad": "Cups & Clouds", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467019", "ad": "Dagi", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467020", "ad": "Defacto", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467021", "ad": "Deli2Go", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467022", "ad": "Dospresso", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467023", "ad": "Doyuyo", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467024", "ad": "Dürümle", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467025", "ad": "E-Bebek", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467026", "ad": "En Plus", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467027", "ad": "English Home", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467028", "ad": "Espresso Lab", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467029", "ad": "Eve Shop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467030", "ad": "Gallery Crystal", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467031", "ad": "Girl Stop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467032", "ad": "Girlstop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467033", "ad": "Gloria Jean's", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467034", "ad": "Gratis", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467035", "ad": "Greyder", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467036", "ad": "HD İskender", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467037", "ad": "HD İskender & KFC", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467038", "ad": "Juan Valdez", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467039", "ad": "KFC", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467040", "ad": "Kahve Dünyası", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467041", "ad": "Kasap Döner", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467042", "ad": "Kiğılı", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467043", "ad": "Kom", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467044", "ad": "Kronotrop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467045", "ad": "Küppeli", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467046", "ad": "LMD Tacos", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467047", "ad": "Lee Cooper", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467048", "ad": "Linens", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467049", "ad": "Little Ceasars Pizza", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467050", "ad": "Loya", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467051", "ad": "Luuq Coffee", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467052", "ad": "Mad Parfume", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467053", "ad": "Mad Parfüm", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467054", "ad": "Madame Coco", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467055", "ad": "Magnolia Shop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467056", "ad": "Mavi", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467057", "ad": "Mc Donald's", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467058", "ad": "Miele", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467059", "ad": "Migros", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467060", "ad": "Mion", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467061", "ad": "Moda Nisa", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467062", "ad": "Mr.Dıy", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467063", "ad": "Ms Warpoint", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467064", "ad": "Musluoğlu-Dilim Börek", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467065", "ad": "Nefeli", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467066", "ad": "Nevada Coffee", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467067", "ad": "Nivo", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467068", "ad": "Nivogo", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467069", "ad": "Oakberry", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467070", "ad": "Paul Mark", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467071", "ad": "Pawco", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467072", "ad": "Penguen", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467073", "ad": "Penti", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467074", "ad": "Perotti", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467075", "ad": "Pizza Lazza", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467076", "ad": "Plus Kitchen", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467077", "ad": "Puufu", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467078", "ad": "Ramsey", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467079", "ad": "Rossmann", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467080", "ad": "Saloon Burger", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467081", "ad": "Setrms", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467082", "ad": "Soley", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467083", "ad": "Soulmate", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467084", "ad": "Springfield", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467085", "ad": "Starbucks", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467086", "ad": "Sushico", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467087", "ad": "Suwen", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467088", "ad": "Süvari", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467089", "ad": "Tab Gıda", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467090", "ad": "Tavada Tavuk", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467091", "ad": "Tavuk Dünyası", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467092", "ad": "Taç-Linens", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467093", "ad": "The Coffee Factory", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467094", "ad": "Toyzz Shop", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467095", "ad": "Tudors", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467096", "ad": "Türk Telekom", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467097", "ad": "Vayro", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467098", "ad": "Vestel", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467099", "ad": "Vitruta", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467100", "ad": "Vivense", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467101", "ad": "Watsons", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467102", "ad": "Yaprak Dönercisi", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467103", "ad": "Yataş", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467104", "ad": "Yves Rocher", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467105", "ad": "Zincir", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467106", "ad": "Zsa Zsa Zsu", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467107", "ad": "Zühre", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467108", "ad": "Çaytaze", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467109", "ad": "Özdilek", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467110", "ad": "İceberry", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}, {"id": "mk1782125467111", "ad": "İkbal Döner & Sucuk", "sektor": "", "bolge": "", "minm2": "", "maxm2": ""}], "talepler": []};
+
+function veriDisaAktar(){
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='lokasyon-crm-yedek-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function veriIceAktar(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const yeni=JSON.parse(e.target.result);
+      if(!yeni.magazalar)throw new Error('Geçersiz dosya');
+      if(!confirm(yeni.magazalar.length+' mağaza, '+(yeni.markalar?.length||0)+' marka yüklenecek. Mevcut veriler korunur. Devam?'))return;
+      const magSet=new Set(data.magazalar.map(m=>locKey(m)));
+      let yM=0;
+      yeni.magazalar.forEach(m=>{if(!magSet.has(locKey(m))){data.magazalar.unshift(m);yM++;}});
+      const marSet=new Set(data.markalar.map(m=>m.ad));
+      let yMar=0;
+      (yeni.markalar||[]).forEach(m=>{if(!marSet.has(m.ad)){data.markalar.push(m);yMar++;}});
+      (yeni.talepler||[]).forEach(t=>{if(!data.talepler.find(x=>x.id===t.id))data.talepler.push(t);});
+      if(!data.ekip)data.ekip=[];
+      (yeni.ekip||[]).forEach(e=>{if(!data.ekip.find(x=>x.id===e.id))data.ekip.push(e);});
+      temizleDuplicate(false);save();renderPano();
+      alert('✓ '+yM+' mağaza ve '+yMar+' marka eklendi!');
+    }catch(err){alert('Hata: Geçersiz yedek dosyası — '+err.message);}
+  };
+  reader.readAsText(file);input.value='';
+}
+
+function locKey(m){ return (m.sehir+'|'+m.cadde+'|'+m.m2).toLowerCase().trim(); }
+
+function importExcel() {
+  if (!confirm('Excel verisi yüklenecek (69 mağaza, 115 marka). Mevcut veriler korunur, yeni kayıtlar eklenir. Devam?')) return;
+  // Eşleştirme şehir+cadde+m2 ile — ad değişse bile aynı lokasyon sayılır
+  const existing = new Set(data.magazalar.map(m => locKey(m)));
+  let yeniMag = 0, yeniMar = 0;
+  EXCEL_IMPORT.magazalar.forEach(m => {
+    if (!existing.has(locKey(m))) { data.magazalar.unshift(m); yeniMag++; }
+  });
+  const existingMarkas = new Set(data.markalar.map(m => m.ad));
+  EXCEL_IMPORT.markalar.forEach(m => {
+    if (!existingMarkas.has(m.ad)) { data.markalar.push(m); yeniMar++; }
+  });
+  temizleDuplicate(false);
+  save();
+  renderPano();
+  alert('✓ ' + yeniMag + ' mağaza ve ' + yeniMar + ' marka eklendi!');
+}
+
+function temizleDuplicate(bildir=true) {
+  const durumOnce = {'Kiralandı':4,'Olumlu':3,'Sunuldu':2,'Olumsuz':1};
+  let toplam = 0;
+
+  // Aynı mağaza içinde aynı markaya birden fazla sunum varsa en iyi durumu tut
+  data.magazalar.forEach(mag => {
+    const map = {};
+    (mag.sunumlar || []).forEach(s => {
+      if (!map[s.marka]) {
+        map[s.marka] = s;
+      } else {
+        toplam++;
+        const mevcutOnce = durumOnce[map[s.marka].durum] || 0;
+        const yeniOnce   = durumOnce[s.durum] || 0;
+        if (yeniOnce > mevcutOnce) map[s.marka] = s; // daha iyi durumu tut
+      }
+    });
+    mag.sunumlar = Object.values(map);
+  });
+
+  // Duplicate mağaza kayıtlarını temizle (aynı şehir+cadde+m2 = aynı lokasyon)
+  const magSet = new Set();
+  const temizMag = [];
+  data.magazalar.forEach(m => {
+    const key = locKey(m);
+    if (!magSet.has(key)) { magSet.add(key); temizMag.push(m); }
+    else toplam++;
+  });
+  data.magazalar = temizMag;
+
+  save();
+  if (bildir) {
+    renderPano();
+    renderMarkalar();
+    alert(toplam > 0 ? '✓ ' + toplam + ' yinelenen kayıt temizlendi!' : 'Yinelenen kayıt bulunamadı.');
+  }
+  return toplam;
+}
+
+/* ---- EKİP & PERFORMANS ---- */
+function ekipUyesiEkle(){
+  const ad=document.getElementById('eu-ad').value.trim();
+  if(!ad){alert('Ad zorunludur');return}
+  if(!data.ekip)data.ekip=[];
+  if(data.ekip.find(e=>e.ad===ad)){alert('Bu kişi zaten ekipte');return}
+  data.ekip.push({id:'eu'+Date.now(),ad,unvan:document.getElementById('eu-unvan').value.trim(),renk:document.getElementById('eu-renk').value});
+  document.getElementById('eu-ad').value='';
+  document.getElementById('eu-unvan').value='';
+  save();renderEkipUyeleri();renderEkip();
+}
+
+function ekipUyesiSil(id){
+  if(!confirm('Ekip üyesini silmek istiyor musunuz?'))return;
+  data.ekip=data.ekip.filter(e=>e.id!==id);
+  save();renderEkipUyeleri();renderEkip();
+}
+
+function renderEkipUyeleri(){
+  if(!data.ekip)data.ekip=[];
+  const el=document.getElementById('ekip-uye-listesi');
+  if(!el)return;
+  el.innerHTML=data.ekip.map(e=>`
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:${e.renk}22;border:1px solid ${e.renk}55">
+      <span style="width:8px;height:8px;border-radius:50%;background:${e.renk};display:inline-block"></span>
+      <span style="font-size:13px;font-weight:500">${e.ad}</span>
+      ${e.unvan?`<span style="font-size:11px;color:#888">${e.unvan}</span>`:''}
+      <button onclick="ekipUyesiSil('${e.id}')" style="border:none;background:none;cursor:pointer;color:#bbb;font-size:14px;padding:0 0 0 4px">×</button>
+    </div>
+  `).join('');
+}
+
+function renderEkip(){
+  if(!data.ekip)data.ekip=[];
+  renderEkipUyeleri();
+
+  const yilSel=document.getElementById('perf-yil');
+  const simdikiYil=new Date().getFullYear();
+  const yillar=[...new Set(
+    data.magazalar.filter(m=>m.durum==='Bizim Kiraladık'&&m.kiraTarih)
+      .map(m=>new Date(m.kiraTarih).getFullYear())
+  )];
+  if(!yillar.includes(simdikiYil))yillar.push(simdikiYil);
+  yillar.sort((a,b)=>b-a);
+  const prevYil=yilSel.value||String(simdikiYil);
+  yilSel.innerHTML=yillar.map(y=>`<option${String(y)===prevYil?' selected':''}>${y}</option>`).join('');
+
+  // Kişi filtre
+  const kisiSel=document.getElementById('perf-kisi');
+  const prevKisi=kisiSel.value;
+  kisiSel.innerHTML='<option value="">Tüm ekip</option>'+data.ekip.map(e=>`<option${e.ad===prevKisi?' selected':''}>${e.ad}</option>`).join('');
+
+  const seciliYil=Number(yilSel.value||simdikiYil);
+  const seciliAy=Number(document.getElementById('perf-ay').value||0);
+  const seciliKisi=kisiSel.value;
+
+  // "Bizim Kiraladık" olan mağazaları filtrele
+  const kiralamalar=data.magazalar.filter(m=>{
+    if(m.durum!=='Bizim Kiraladık')return false;
+    if(seciliKisi&&m.ureten!==seciliKisi&&!(m.calisanlar||[]).includes(seciliKisi))return false;
+    if(m.kiraTarih){
+      const d=new Date(m.kiraTarih);
+      if(d.getFullYear()!==seciliYil)return false;
+      if(seciliAy&&(d.getMonth()+1)!==seciliAy)return false;
+    }
+    return true;
+  });
+
+  // Aylık filtre için aynı yılın tüm ayları
+  const aylikData=Array.from({length:12},(_,i)=>{
+    const ay=i+1;
+    const ayKira=data.magazalar.filter(m=>{
+      if(m.durum!=='Bizim Kiraladık')return false;
+      if(seciliKisi&&m.kiralayanKisi!==seciliKisi)return false;
+      if(!m.kiraTarih)return false;
+      const d=new Date(m.kiraTarih);
+      return d.getFullYear()===seciliYil&&(d.getMonth()+1)===ay;
+    });
+    return{ay,sayi:ayKira.length,toplam:ayKira.reduce((t,m)=>t+Number(m.kira||0),0)};
+  });
+
+  const toplamKira=kiralamalar.reduce((t,m)=>t+Number(m.kira||0),0);
+  const toplamSayi=kiralamalar.length;
+
+  // Özet kartları
+  const ozetEl=document.getElementById('ekip-ozet');
+  ozetEl.innerHTML=`
+    <div class="stat-card"><div class="stat-lbl">Toplam kiralama</div><div class="stat-num">${toplamSayi}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Toplam kira ₺</div><div class="stat-num" style="font-size:16px;color:#3730a3">${toplamKira.toLocaleString('tr-TR')}₺</div></div>
+    <div class="stat-card"><div class="stat-lbl">Ort. kira</div><div class="stat-num" style="font-size:16px">${toplamSayi?Math.round(toplamKira/toplamSayi).toLocaleString('tr-TR')+'₺':'-'}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Aktif ekip</div><div class="stat-num">${data.ekip.length}</div></div>
+  `;
+
+  // Kişi bazlı kartlar
+  const kisiKartEl=document.getElementById('ekip-kisi-kartlar');
+  const gosterilecekEkip=data.ekip.length?data.ekip:[{ad:'Ben',renk:'#6366f1',id:'ben'}];
+  kisiKartEl.innerHTML=gosterilecekEkip.map(e=>{
+    const kisiKira=data.magazalar.filter(m=>m.durum==='Bizim Kiraladık'&&(m.ureten===e.ad||(m.calisanlar||[]).includes(e.ad))&&(()=>{
+      if(!m.kiraTarih)return true;
+      const d=new Date(m.kiraTarih);
+      if(d.getFullYear()!==seciliYil)return false;
+      if(seciliAy&&(d.getMonth()+1)!==seciliAy)return false;
+      return true;
+    })());
+    const kisiToplam=kisiKira.reduce((t,m)=>t+Number(m.kira||0),0);
+    const yuzde=toplamKira>0?Math.round(kisiToplam/toplamKira*100):0;
+    return`<div class="card" style="border-left:4px solid ${e.renk}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:36px;height:36px;border-radius:50%;background:${e.renk}22;border:2px solid ${e.renk};display:flex;align-items:center;justify-content:center;font-weight:700;color:${e.renk};font-size:14px">${e.ad[0]}</div>
+        <div><div style="font-size:14px;font-weight:600">${e.ad}</div>${e.unvan?`<div style="font-size:11px;color:#888">${e.unvan}</div>`:''}</div>
+        <div style="margin-left:auto;text-align:right"><div style="font-size:20px;font-weight:700;color:${e.renk}">${kisiKira.length}</div><div style="font-size:11px;color:#888">kiralama</div></div>
+      </div>
+      <div style="font-size:13px;margin-bottom:8px"><span style="color:#888">Toplam kira:</span> <strong>${kisiToplam.toLocaleString('tr-TR')}₺</strong></div>
+      <div style="background:#f3f4f6;border-radius:20px;height:6px;overflow:hidden;margin-bottom:4px">
+        <div style="width:${yuzde}%;height:100%;background:${e.renk};border-radius:20px"></div>
+      </div>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Ekip payı: %${yuzde}</div>
+      ${kisiKira.length?kisiKira.map(m=>{
+        const kiralanMarka=(m.sunumlar||[]).find(s=>s.durum==='Olumlu'||s.durum==='Kiralandı');
+        return`<div style="padding:7px 0;border-top:1px solid #f0ede8;font-size:12px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <span style="font-weight:600;flex:1">${m.ad}</span>
+            <span style="color:#3730a3;font-weight:600">${Number(m.kira||0).toLocaleString('tr-TR')}₺</span>
+          </div>
+          <div style="color:#555">${m.sehir}${m.cadde?' · <span style="color:#888">'+m.cadde+'</span>':''}</div>
+          ${kiralanMarka?`<div style="margin-top:2px"><span style="background:#e0e7ff;color:#3730a3;padding:1px 8px;border-radius:20px;font-size:11px">→ ${kiralanMarka.marka}</span></div>`:'<div style="margin-top:2px;font-size:11px;color:#bbb">Marka belirlenmedi</div>'}
+          ${m.kiraTarih?`<div style="color:#bbb;margin-top:1px">${m.kiraTarih}</div>`:''}
+        </div>`;
+      }).join(''):`<div style="font-size:12px;color:#bbb;padding:8px 0">Bu dönemde kiralama yok</div>`}
+    </div>`;
+  }).join('');
+
+  // Kiralama tablosu
+  const tbody=document.getElementById('ekip-kiralama-tbody');
+  if(!kiralamalar.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">Bu dönemde kiralama bulunamadı</div></td></tr>';return}
+  tbody.innerHTML=kiralamalar.sort((a,b)=>(b.kiraTarih||'').localeCompare(a.kiraTarih||'')).map(m=>{
+    const kiralanMarka=(m.sunumlar||[]).find(s=>s.durum==='Olumlu'||s.durum==='Kiralandı');
+    const uretenKisi=data.ekip.find(e=>e.ad===m.ureten);
+    const calisan1=data.ekip.find(e=>e.ad===(m.calisanlar||[])[0]);
+    const calisan2=data.ekip.find(e=>e.ad===(m.calisanlar||[])[1]);
+
+    const kisiAvatar=(kisi,renk)=>kisi
+      ?`<div title="${kisi.ad}" style="width:24px;height:24px;border-radius:50%;background:${renk||kisi.renk}22;border:2px solid ${renk||kisi.renk};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${renk||kisi.renk}">${kisi.ad[0]}</div>`:'';
+
+    return`<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px">
+          ${uretenKisi?kisiAvatar(uretenKisi):''}
+          <select style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:6px;max-width:110px" onchange="kiraRolGuncelle('${m.id}','ureten',this.value)">
+            <option value="">— üreten —</option>
+            ${data.ekip.map(e=>`<option${m.ureten===e.ad?' selected':''}>${e.ad}</option>`).join('')}
+          </select>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;align-items:center;gap:4px">
+            ${calisan1?kisiAvatar(calisan1):''}
+            <select style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:6px;max-width:110px" onchange="kiraRolGuncelle('${m.id}','calisan1',this.value)">
+              <option value="">— çalışan 1 —</option>
+              ${data.ekip.map(e=>`<option${(m.calisanlar||[])[0]===e.ad?' selected':''}>${e.ad}</option>`).join('')}
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            ${calisan2?kisiAvatar(calisan2):''}
+            <select style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:6px;max-width:110px" onchange="kiraRolGuncelle('${m.id}','calisan2',this.value)">
+              <option value="">— çalışan 2 —</option>
+              ${data.ekip.map(e=>`<option${(m.calisanlar||[])[1]===e.ad?' selected':''}>${e.ad}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </td>
+      <td style="font-weight:500;font-size:13px">${m.ad}</td>
+      <td style="font-size:12px">${m.sehir}${m.cadde?'<br><span style="color:#888">'+m.cadde+'</span>':''}</td>
+      <td>${kiralanMarka
+        ?`<span style="background:#e0e7ff;color:#3730a3;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500">${kiralanMarka.marka}</span>`
+        :`<span style="font-size:12px;color:#bbb">—</span>`}
+      </td>
+      <td style="font-weight:600;color:#3730a3">${m.kira?Number(m.kira).toLocaleString('tr-TR')+'₺':'-'}</td>
+      <td><input type="date" value="${m.kiraTarih||''}" style="font-size:12px;padding:4px 6px;width:130px;border:1px solid #ddd;border-radius:6px" onchange="kiraTarihGuncelle('${m.id}',this.value)"></td>
+    </tr>`;
+  }).join('');
+}
+
+function kiraRolGuncelle(id, rol, val){
+  const m=data.magazalar.find(x=>x.id===id);
+  if(!m)return;
+  if(rol==='ureten') m.ureten=val;
+  else if(rol==='calisan1'){
+    if(!m.calisanlar)m.calisanlar=[];
+    m.calisanlar[0]=val;
+  } else if(rol==='calisan2'){
+    if(!m.calisanlar)m.calisanlar=[];
+    m.calisanlar[1]=val;
+  }
+  save();renderEkip();
+}
+
+function kiralayanGuncelle(id,val){
+  const m=data.magazalar.find(x=>x.id===id);
+  if(m){m.kiralayanKisi=val;save();}
+  renderEkip();
+}
+
+function kiraTarihGuncelle(id,val){
+  const m=data.magazalar.find(x=>x.id===id);
+  if(m){m.kiraTarih=val;save();}
+  renderEkip();
+}
+
+renderPano();
+loadFromCloud();
+</script>
+</body>
+</html>
